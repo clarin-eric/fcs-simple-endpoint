@@ -39,6 +39,12 @@
             <artifactId>sru-server</artifactId>
             <version>1.5.0</version>
         </dependency>
+        
+        <dependency>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>woodstox-core-lgpl</artifactId>
+            <version>4.1.3</version>
+        </dependency> 
     </dependencies>
 
     <dependencyManagement>
