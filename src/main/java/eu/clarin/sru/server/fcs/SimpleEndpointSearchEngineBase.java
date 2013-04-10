@@ -366,7 +366,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
             throw new NullPointerException("resourceInfoList == null");
         }
         if (!resourceInfoList.isEmpty()) {
-            final boolean defaultNS = (prefix == null || prefix.isEmpty());
+            final boolean defaultNS = ((prefix == null) || prefix.isEmpty());
             if (defaultNS) {
                 writer.setDefaultNamespace(FCS_RESOURCE_INFO_NS);
             } else {
@@ -398,7 +398,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
     private static void doWriteResourceInfo(XMLStreamWriter writer,
             String prefix, ResourceInfo resourceInfo, boolean writeNS,
             boolean recursive) throws XMLStreamException {
-        final boolean defaultNS = (prefix == null || prefix.isEmpty());
+        final boolean defaultNS = ((prefix == null) || prefix.isEmpty());
         if (writeNS) {
             if (defaultNS) {
                 writer.setDefaultNamespace(FCS_RESOURCE_INFO_NS);
