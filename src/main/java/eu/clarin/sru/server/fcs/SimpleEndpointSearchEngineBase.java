@@ -366,7 +366,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
             throw new NullPointerException("resourceInfoList == null");
         }
         if (!resourceInfoList.isEmpty()) {
-            final boolean defaultNS = (prefix == null || prefix.isEmpty());
+            final boolean defaultNS = ((prefix == null) || prefix.isEmpty());
             if (defaultNS) {
                 writer.setDefaultNamespace(FCS_RESOURCE_INFO_NS);
             } else {
@@ -398,7 +398,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
     private static void doWriteResourceInfo(XMLStreamWriter writer,
             String prefix, ResourceInfo resourceInfo, boolean writeNS,
             boolean recursive) throws XMLStreamException {
-        final boolean defaultNS = (prefix == null || prefix.isEmpty());
+        final boolean defaultNS = ((prefix == null) || prefix.isEmpty());
         if (writeNS) {
             if (defaultNS) {
                 writer.setDefaultNamespace(FCS_RESOURCE_INFO_NS);
@@ -414,7 +414,14 @@ public abstract class SimpleEndpointSearchEngineBase extends
                 writer.writeNamespace(prefix, FCS_RESOURCE_INFO_NS);
             }
         }
-        writer.writeAttribute("pid", resourceInfo.getPid());
+        if (recursive) {
+            /*
+             * HACK: only output @pid for recursive (= explain) requests.
+             * This should be revisited, if we decide to go for the explain
+             * style enumeration of resources. 
+             */
+            writer.writeAttribute("pid", resourceInfo.getPid());
+        }
         if (resourceInfo.hasSubResources()) {
             writer.writeAttribute("hasSubResources", "true");
         }
