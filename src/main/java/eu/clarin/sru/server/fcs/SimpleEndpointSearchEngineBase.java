@@ -414,7 +414,14 @@ public abstract class SimpleEndpointSearchEngineBase extends
                 writer.writeNamespace(prefix, FCS_RESOURCE_INFO_NS);
             }
         }
-        writer.writeAttribute("pid", resourceInfo.getPid());
+        if (recursive) {
+            /*
+             * HACK: only output @pid for recursive (= explain) requests.
+             * This should be revisited, if we decide to go for the explain
+             * style enumeration of resources. 
+             */
+            writer.writeAttribute("pid", resourceInfo.getPid());
+        }
         if (resourceInfo.hasSubResources()) {
             writer.writeAttribute("hasSubResources", "true");
         }
