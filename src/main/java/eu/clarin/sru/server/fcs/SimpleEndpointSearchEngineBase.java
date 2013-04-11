@@ -139,14 +139,27 @@ public abstract class SimpleEndpointSearchEngineBase extends
         final List<ResourceInfo> result =
                 translateFcsScanResource(request.getScanClause());
         if (result != null) {
+            /*
+             * Make sure, we honor the maximumTerms limit, of the client
+             * requests it ...
+             */
+            final int maxTerms
+                = ((result.size() > 0) && (request.getMaximumTerms() > 0))
+                ? Math.min(result.size(), request.getMaximumTerms())
+                : result.size();
+
+            /*
+             * Shall we provide extended resource information ... ?
+             */
             final boolean provideResourceInfo = parseBoolean(
                     request.getExtraRequestData(X_CMD_RESOURCE_INFO));
+
             return new SRUScanResultSet(diagnostics) {
                 private int idx = -1;
 
                 @Override
                 public boolean nextTerm() {
-                    return (result != null) && (++idx < result.size());
+                    return (result != null) && (++idx < maxTerms);
                 }
 
 
@@ -418,7 +431,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
             /*
              * HACK: only output @pid for recursive (= explain) requests.
              * This should be revisited, if we decide to go for the explain
-             * style enumeration of resources. 
+             * style enumeration of resources.
              */
             writer.writeAttribute("pid", resourceInfo.getPid());
         }
