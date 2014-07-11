@@ -3,6 +3,7 @@ package eu.clarin.sru.server.fcs.utils;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -43,7 +45,7 @@ import eu.clarin.sru.server.fcs.ResourceInfo;
  * @see SimpleResourceInfoInventory
  */
 public class SimpleResourceInfoInventoryParser {
-    private static final String NS = "http://clarin.eu/fcs/1.0/resource-info";
+    private static final String NS = "http://clarin.eu/fcs/endpoint-description";
     private static final String LANG_EN = "en";
     private static final Logger logger =
             LoggerFactory.getLogger(SimpleResourceInfoInventoryParser.class);
@@ -102,7 +104,7 @@ public class SimpleResourceInfoInventoryParser {
                 }
             });
             XPathExpression expression =
-                    xpath.compile("/ri:ResourceCollection/ri:ResourceInfo");
+                    xpath.compile("/ri:Resources/ri:Resource");
             NodeList list =
                     (NodeList) expression.evaluate(doc, XPathConstants.NODESET);
 
@@ -136,6 +138,7 @@ public class SimpleResourceInfoInventoryParser {
             Map<String, String> descrs = null;
             String link = null;
             List<String> langs = null;
+            String[] availableDataViews = null;
             List<ResourceInfo> sub = null;
 
             pid = node.getAttribute("pid");
@@ -261,9 +264,20 @@ public class SimpleResourceInfoInventoryParser {
                     langs.add(s);
                 }
             }
-
+            
+            XPathExpression x6 = xpath.compile("ri:AvailableDataViews/@ref");
+            String ref = (String) x6.evaluate(node, XPathConstants.STRING);
+            
+            if (ref == null || ref.isEmpty()){
+            	throw new SRUConfigException("Element <AvailableDataViews> " +
+                        "must have a non-empty attribute ref.");
+            }
+            
+            availableDataViews = ref.split("\\s+");
+            
+            
             XPathExpression x5 =
-                    xpath.compile("ri:ResourceCollection/ri:ResourceInfo");
+                    xpath.compile("ri:Resources/ri:Resource");
             NodeList l5 = (NodeList) x5.evaluate(node, XPathConstants.NODESET);
             if ((l5 != null) && (l5.getLength() > 0)) {
                 sub = parseResourceInfo(xpath, l5, ids);
@@ -273,7 +287,7 @@ public class SimpleResourceInfoInventoryParser {
                 ris = new LinkedList<ResourceInfo>();
             }
             ris.add(new ResourceInfo(pid, resourceCount, titles, descrs, link,
-                    langs, sub));
+                    langs, Arrays.asList(availableDataViews),sub));
         }
         return ris;
     }

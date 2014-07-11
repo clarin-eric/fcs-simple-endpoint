@@ -1,11 +1,11 @@
 package eu.clarin.sru.server.fcs;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
-import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -35,9 +35,10 @@ import eu.clarin.sru.server.utils.SRUSearchEngineBase;
  */
 public abstract class SimpleEndpointSearchEngineBase extends
         SRUSearchEngineBase {
-    private static final String FCS_RESOURCE_INFO_NS =
-            "http://clarin.eu/fcs/1.0/resource-info";
-    private static final String X_CMD_RESOURCE_INFO = "x-cmd-resource-info";
+    
+//    private static final String X_CMD_RESOURCE_INFO = "x-cmd-resource-info";
+    private static final String X_FCS_ENDPOINT_DESCRIPTION = "x-fcs-endpoint-description";
+    
     private static final String FCS_SCAN_INDEX_FCS_RESOURCE = "fcs.resource";
     private static final String FCS_SCAN_INDEX_CQL_SERVERCHOICE = "cql.serverChoice";
     private static final String FCS_SCAN_SUPPORTED_RELATION_CQL_1_1 = "scr";
@@ -46,9 +47,19 @@ public abstract class SimpleEndpointSearchEngineBase extends
     private static final Logger logger =
             LoggerFactory.getLogger(SimpleEndpointSearchEngineBase.class);
     protected ResourceInfoInventory resourceInfoInventory;
-
-
-    /**
+    
+    public List<String> capabilities;
+    public List<DataView> supportedDataViews;
+    
+    public void addEndpointCapability(String c){
+    	capabilities.add(c);
+    }
+    
+    public void addDataView(DataView d){
+    	supportedDataViews.add(d);
+    }
+	
+	/**
      * This method should not be overridden. Perform your custom initialization
      * in the {@link #doInit(ServletContext, SRUServerConfig, Map)} method
      * Instead.
@@ -60,10 +71,24 @@ public abstract class SimpleEndpointSearchEngineBase extends
             Map<String, String> params) throws SRUConfigException {
         logger.debug("initializing");
         super.init(context, config, params);
-
+        
+        logger.debug("Setting basic capability");
+        capabilities = new ArrayList<String>();
+        capabilities.add("http://clarin.eu/fcs/capability/basic-search");
+        
+        logger.debug("Setting Generic Hits dataview");
+        supportedDataViews = new ArrayList<DataView>();
+        supportedDataViews.add(
+        		new DataView("The representation of the hit", 
+        			"application/x-clarin-fcs-hits+xml", 
+        			DataView.PayloadDisposition.INLINE, 
+        			DataView.PayloadDelivery.SEND_BY_DEFAULT, 
+        			"hits")
+        );
+        
         logger.debug("initializing search engine implementation");
         doInit(context, config, params);
-
+        	
         logger.debug("initizalizing resource info inventory");
         this.resourceInfoInventory = createResourceInfoInventory(context, config, params);
         if (this.resourceInfoInventory == null) {
@@ -96,7 +121,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
             SRURequest request, SRUDiagnosticList diagnostics)
             throws SRUException {
         final boolean provideResourceInfo =
-                parseBoolean(request.getExtraRequestData(X_CMD_RESOURCE_INFO));
+                parseBoolean(request.getExtraRequestData(X_FCS_ENDPOINT_DESCRIPTION));
         if (provideResourceInfo) {
             final List<ResourceInfo> resourceInfoList =
                     resourceInfoInventory.getResourceInfoList(
@@ -111,7 +136,9 @@ public abstract class SimpleEndpointSearchEngineBase extends
                 @Override
                 public void writeExtraResponseData(XMLStreamWriter writer)
                         throws XMLStreamException {
-                    writeFullResourceInfo(writer, null, resourceInfoList);
+                	EndpointDescriptionWriter.writeEndpointDescription(writer, 
+                			capabilities, supportedDataViews, resourceInfoList);
+                    //ResourceInfoWriter.writeFullResourceInfo(writer, null, resourceInfoList);
                 }
             };
         } else {
@@ -129,6 +156,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
      * @see #doScan(SRUServerConfig, SRURequest, SRUDiagnosticList)
      */
     @Override
+    @Deprecated
     public final SRUScanResultSet scan(SRUServerConfig config,
             SRURequest request, SRUDiagnosticList diagnostics)
             throws SRUException {
@@ -152,7 +180,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
              * Shall we provide extended resource information ... ?
              */
             final boolean provideResourceInfo = parseBoolean(
-                    request.getExtraRequestData(X_CMD_RESOURCE_INFO));
+                    request.getExtraRequestData(X_FCS_ENDPOINT_DESCRIPTION));
 
             return new SRUScanResultSet(diagnostics) {
                 private int idx = -1;
@@ -197,7 +225,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
                 public void writeExtraTermData(XMLStreamWriter writer)
                         throws XMLStreamException {
                     if (provideResourceInfo) {
-                        writeResourceInfo(writer, null, result.get(idx));
+                        ResourceInfoWriter.writeResourceInfo(writer, null, result.get(idx));
                     }
                 }
             };
@@ -265,6 +293,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
      * @see SRUSearchEngine#explain(SRUServerConfig, SRURequest,
      *      SRUDiagnosticList)
      */
+    @Deprecated
     protected SRUScanResultSet doScan(SRUServerConfig config,
             SRURequest request, SRUDiagnosticList diagnostics)
             throws SRUException {
@@ -300,7 +329,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
         return false;
     }
 
-
+    @Deprecated
     private List<ResourceInfo> translateFcsScanResource(CQLNode scanClause)
             throws SRUException {
         if (scanClause instanceof CQLTermNode) {
@@ -372,120 +401,6 @@ public abstract class SimpleEndpointSearchEngineBase extends
     }
 
 
-    private static void writeFullResourceInfo(XMLStreamWriter writer,
-            String prefix, List<ResourceInfo> resourceInfoList)
-            throws XMLStreamException {
-        if (resourceInfoList == null) {
-            throw new NullPointerException("resourceInfoList == null");
-        }
-        if (!resourceInfoList.isEmpty()) {
-            final boolean defaultNS = ((prefix == null) || prefix.isEmpty());
-            if (defaultNS) {
-                writer.setDefaultNamespace(FCS_RESOURCE_INFO_NS);
-            } else {
-                writer.setPrefix(prefix, FCS_RESOURCE_INFO_NS);
-            }
-            writer.writeStartElement(FCS_RESOURCE_INFO_NS, "ResourceCollection");
-            if (defaultNS) {
-                writer.writeDefaultNamespace(FCS_RESOURCE_INFO_NS);
-            } else {
-                writer.writeNamespace(prefix, FCS_RESOURCE_INFO_NS);
-            }
-            for (ResourceInfo resourceInfo : resourceInfoList) {
-                doWriteResourceInfo(writer, prefix, resourceInfo, false, true);
-            }
-            writer.writeEndElement(); // "ResourceCollection" element
-        }
-    }
-
-
-    private static void writeResourceInfo(XMLStreamWriter writer, String prefix,
-            ResourceInfo resourceInfo) throws XMLStreamException {
-        if (resourceInfo == null) {
-            throw new NullPointerException("resourceInfo == null");
-        }
-        doWriteResourceInfo(writer, prefix, resourceInfo, true, false);
-    }
-
-
-    private static void doWriteResourceInfo(XMLStreamWriter writer,
-            String prefix, ResourceInfo resourceInfo, boolean writeNS,
-            boolean recursive) throws XMLStreamException {
-        final boolean defaultNS = ((prefix == null) || prefix.isEmpty());
-        if (writeNS) {
-            if (defaultNS) {
-                writer.setDefaultNamespace(FCS_RESOURCE_INFO_NS);
-            } else {
-                writer.setPrefix(prefix, FCS_RESOURCE_INFO_NS);
-            }
-        }
-        writer.writeStartElement(FCS_RESOURCE_INFO_NS, "ResourceInfo");
-        if (writeNS) {
-            if (defaultNS) {
-                writer.writeDefaultNamespace(FCS_RESOURCE_INFO_NS);
-            } else {
-                writer.writeNamespace(prefix, FCS_RESOURCE_INFO_NS);
-            }
-        }
-        if (recursive) {
-            /*
-             * HACK: only output @pid for recursive (= explain) requests.
-             * This should be revisited, if we decide to go for the explain
-             * style enumeration of resources.
-             */
-            writer.writeAttribute("pid", resourceInfo.getPid());
-        }
-        if (resourceInfo.hasSubResources()) {
-            writer.writeAttribute("hasSubResources", "true");
-        }
-
-        final Map<String, String> title = resourceInfo.getTitle();
-        for (Map.Entry<String, String> i : title.entrySet()) {
-            writer.setPrefix(XMLConstants.XML_NS_PREFIX,
-                    XMLConstants.XML_NS_URI);
-            writer.writeStartElement(FCS_RESOURCE_INFO_NS, "Title");
-            writer.writeAttribute(XMLConstants.XML_NS_URI, "lang", i.getKey());
-            writer.writeCharacters(i.getValue());
-            writer.writeEndElement(); // "title" element
-        }
-
-        final Map<String, String> description = resourceInfo.getDescription();
-        if (description != null) {
-            for (Map.Entry<String, String> i : description.entrySet()) {
-                writer.writeStartElement(FCS_RESOURCE_INFO_NS, "Description");
-                writer.writeAttribute(XMLConstants.XML_NS_URI, "lang",
-                        i.getKey());
-                writer.writeCharacters(i.getValue());
-                writer.writeEndElement(); // "Description" element
-            }
-        }
-
-        final String landingPageURI = resourceInfo.getLandingPageURI();
-        if (landingPageURI != null) {
-            writer.writeStartElement(FCS_RESOURCE_INFO_NS, "LandingPageURI");
-            writer.writeCharacters(landingPageURI);
-            writer.writeEndElement(); // "LandingPageURI" element
-        }
-
-        final List<String> languages = resourceInfo.getLanguages();
-        writer.writeStartElement(FCS_RESOURCE_INFO_NS, "Languages");
-        for (String i : languages) {
-            writer.writeStartElement(FCS_RESOURCE_INFO_NS, "Language");
-            writer.writeCharacters(i);
-            writer.writeEndElement(); // "Language" element
-
-        }
-        writer.writeEndElement(); // "Languages" element
-
-        if (recursive && resourceInfo.hasSubResources()) {
-            writer.writeStartElement(FCS_RESOURCE_INFO_NS,
-                    "ResourceInfoCollection");
-            for (ResourceInfo r : resourceInfo.getSubResources()) {
-                doWriteResourceInfo(writer, prefix, r, writeNS, recursive);
-            }
-            writer.writeEndElement(); // "ResourceCollection" element
-        }
-        writer.writeEndElement(); // "ResourceInfo" element
-    }
+    
 
 } // class SimpleEndpointSearchEngineBase

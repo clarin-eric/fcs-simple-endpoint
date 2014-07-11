@@ -13,13 +13,15 @@ import java.util.Map;
  */
 public class ResourceInfo {
     private final String pid;
+    @Deprecated
     private final int resourceCount;
     private final Map<String, String> title;
     private final Map<String, String> description;
     private final String landingPageURI;
     private final List<String> languages;
+    private final List<String> availableDataViews;
     private List<ResourceInfo> subResources;
-
+    
 
     /**
      * Constructor.
@@ -49,6 +51,7 @@ public class ResourceInfo {
     public ResourceInfo(String pid, int resourceCount,
             Map<String, String> title, Map<String, String> description,
             String landingPageURI, List<String> languages,
+            List<String> availableDataViews,
             List<ResourceInfo> subResources) {
         if (pid == null) {
             throw new NullPointerException("id == null");
@@ -75,11 +78,18 @@ public class ResourceInfo {
             throw new IllegalArgumentException("languages is empty");
         }
         this.languages = languages;
+        if (availableDataViews == null){
+        	throw new IllegalArgumentException("available data views == null");
+        }
+        if (availableDataViews.isEmpty()){
+        	throw new IllegalArgumentException("available data views are empty");
+        }
+        this.availableDataViews = availableDataViews;
         if ((subResources != null) && !subResources.isEmpty()) {
             this.subResources = Collections.unmodifiableList(subResources);
         } else {
             this.subResources = null;
-        }
+        }        
     }
 
 
@@ -100,6 +110,7 @@ public class ResourceInfo {
      *
      * @return a number of items or <code>-1</code> if not applicable
      */
+    @Deprecated
     public int getResourceCount() {
         return resourceCount;
     }
@@ -194,5 +205,11 @@ public class ResourceInfo {
     public List<ResourceInfo> getSubResources() {
         return subResources;
     }
+
+
+	public List<String> getAvailableDataViews() {
+		return availableDataViews;
+	}
+
 
 } // class ResourceInfo

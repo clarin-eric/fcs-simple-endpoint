@@ -3,7 +3,7 @@ package eu.clarin.sru.server.fcs;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-public class FCSResultWriter {
+public class SimpleFcsResourceWriter {
 	private static final String FCS_NS = "http://clarin.eu/fcs/resource";
     private static final String FCS_PREFIX = "fcs";
     private static final String FCS_DATAVIEW_MIMETYPE =
