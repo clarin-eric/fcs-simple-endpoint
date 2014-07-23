@@ -36,7 +36,7 @@ import eu.clarin.sru.server.utils.SRUSearchEngineBase;
 public abstract class SimpleEndpointSearchEngineBase extends
         SRUSearchEngineBase {
     
-//    private static final String X_CMD_RESOURCE_INFO = "x-cmd-resource-info";
+    private static final String X_CMD_RESOURCE_INFO = "x-cmd-resource-info";
     private static final String X_FCS_ENDPOINT_DESCRIPTION = "x-fcs-endpoint-description";
     
     private static final String FCS_SCAN_INDEX_FCS_RESOURCE = "fcs.resource";
@@ -57,8 +57,26 @@ public abstract class SimpleEndpointSearchEngineBase extends
     
     public void addDataView(DataView d){
     	supportedDataViews.add(d);
+    }	
+       
+    public void setCapabilities(){
+    	 logger.debug("Setting basic capability");
+         capabilities = new ArrayList<String>();
+         capabilities.add("http://clarin.eu/fcs/capability/basic-search");
+    }      
+    
+    public void setSupportedDataViews(){
+         logger.debug("Setting Generic Hits dataview");
+         supportedDataViews = new ArrayList<DataView>();
+         supportedDataViews.add(
+         		new DataView("The representation of the hit", 
+         			"application/x-clarin-fcs-hits+xml", 
+         			DataView.PayloadDisposition.INLINE, 
+         			DataView.PayloadDelivery.SEND_BY_DEFAULT, 
+         			"hits")
+         );
     }
-	
+    
 	/**
      * This method should not be overridden. Perform your custom initialization
      * in the {@link #doInit(ServletContext, SRUServerConfig, Map)} method
@@ -70,21 +88,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
     public final void init(ServletContext context, SRUServerConfig config,
             Map<String, String> params) throws SRUConfigException {
         logger.debug("initializing");
-        super.init(context, config, params);
-        
-        logger.debug("Setting basic capability");
-        capabilities = new ArrayList<String>();
-        capabilities.add("http://clarin.eu/fcs/capability/basic-search");
-        
-        logger.debug("Setting Generic Hits dataview");
-        supportedDataViews = new ArrayList<DataView>();
-        supportedDataViews.add(
-        		new DataView("The representation of the hit", 
-        			"application/x-clarin-fcs-hits+xml", 
-        			DataView.PayloadDisposition.INLINE, 
-        			DataView.PayloadDelivery.SEND_BY_DEFAULT, 
-        			"hits")
-        );
+        super.init(context, config, params);              
         
         logger.debug("initializing search engine implementation");
         doInit(context, config, params);
@@ -120,28 +124,58 @@ public abstract class SimpleEndpointSearchEngineBase extends
     public final SRUExplainResult explain(SRUServerConfig config,
             SRURequest request, SRUDiagnosticList diagnostics)
             throws SRUException {
-        final boolean provideResourceInfo =
+    	
+        final boolean provideCmdResourceInfo =
+                parseBoolean(request.getExtraRequestData(X_CMD_RESOURCE_INFO));
+        final boolean provideFcsResourceInfo =
                 parseBoolean(request.getExtraRequestData(X_FCS_ENDPOINT_DESCRIPTION));
-        if (provideResourceInfo) {
+                
+        if (provideCmdResourceInfo) {
             final List<ResourceInfo> resourceInfoList =
                     resourceInfoInventory.getResourceInfoList(
                             ResourceInfoInventory.PID_ROOT);
+            
             return new SRUExplainResult(diagnostics) {
-
                 @Override
                 public boolean hasExtraResponseData() {
-                    return provideResourceInfo;
+                    return provideCmdResourceInfo;
                 }
-
                 @Override
                 public void writeExtraResponseData(XMLStreamWriter writer)
                         throws XMLStreamException {
-                	EndpointDescriptionWriter.writeEndpointDescription(writer, 
-                			capabilities, supportedDataViews, resourceInfoList);
-                    //ResourceInfoWriter.writeFullResourceInfo(writer, null, resourceInfoList);
+                    ResourceInfoWriter.writeFullResourceInfo(writer, null, resourceInfoList);
                 }
             };
-        } else {
+        }
+        else if (provideFcsResourceInfo && capabilities != null 
+        		&& supportedDataViews != null){
+        	
+        	final List<ResourceInfo> resourceInfoList =
+                    resourceInfoInventory.getResourceInfoList(
+                            ResourceInfoInventory.PID_ROOT);
+        	
+//        	if (capabilities == null){
+//        		throw new SRUException(SRUConstants.SRU_GENERAL_SYSTEM_ERROR, 
+//        				"Capabilities are not set.");
+//        	}
+//        	if (supportedDataViews == null){
+//        		throw new SRUException(SRUConstants.SRU_GENERAL_SYSTEM_ERROR, 
+//        				"Supported data views are not set.");
+//        	}
+        	return new SRUExplainResult(diagnostics) {
+                @Override
+                public boolean hasExtraResponseData() {
+                    return provideFcsResourceInfo;
+                }
+                @Override
+                public void writeExtraResponseData(XMLStreamWriter writer)
+                        throws XMLStreamException {
+            		EndpointDescriptionWriter.writeEndpointDescription(writer, 
+            			capabilities, supportedDataViews, resourceInfoList);
+                }
+            };
+        }
+        else {
             return null;
         }
     }

@@ -19,7 +19,7 @@ public class ResourceInfo {
     private final Map<String, String> description;
     private final String landingPageURI;
     private final List<String> languages;
-    private final List<String> availableDataViews;
+    private List<String> availableDataViews;
     private List<ResourceInfo> subResources;
     
 
@@ -51,7 +51,6 @@ public class ResourceInfo {
     public ResourceInfo(String pid, int resourceCount,
             Map<String, String> title, Map<String, String> description,
             String landingPageURI, List<String> languages,
-            List<String> availableDataViews,
             List<ResourceInfo> subResources) {
         if (pid == null) {
             throw new NullPointerException("id == null");
@@ -78,13 +77,7 @@ public class ResourceInfo {
             throw new IllegalArgumentException("languages is empty");
         }
         this.languages = languages;
-        if (availableDataViews == null){
-        	throw new IllegalArgumentException("available data views == null");
-        }
-        if (availableDataViews.isEmpty()){
-        	throw new IllegalArgumentException("available data views are empty");
-        }
-        this.availableDataViews = availableDataViews;
+        
         if ((subResources != null) && !subResources.isEmpty()) {
             this.subResources = Collections.unmodifiableList(subResources);
         } else {
@@ -92,6 +85,22 @@ public class ResourceInfo {
         }        
     }
 
+    public ResourceInfo(String pid, int resourceCount,
+            Map<String, String> title, Map<String, String> description,
+            String landingPageURI, List<String> languages,
+            List<String> availableDataViews,
+            List<ResourceInfo> subResources) {
+    	this(pid,resourceCount, title, description, landingPageURI, languages, subResources);
+    	
+    	if (availableDataViews == null){
+        	throw new IllegalArgumentException("available data views == null");
+        }
+        if (availableDataViews.isEmpty()){
+        	throw new IllegalArgumentException("available data views are empty");
+        }
+        this.availableDataViews = availableDataViews;        
+    }
+    
 
     /**
      * Get the persistent identifier of this resource.

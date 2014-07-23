@@ -52,13 +52,7 @@ public class ResourceInfoWriter {
 		
 		if (writer == null) {
             throw new NullPointerException("writer == null");
-        }
-		if (prefix == null) {
-            throw new NullPointerException("prefix == null");
-        }
-		if (prefix.isEmpty()) {
-            throw new IllegalArgumentException("prefix is empty");
-        }
+        }		
 		if (resourceInfo == null) {
             throw new NullPointerException("resourceInfo == null");
         }
@@ -128,19 +122,20 @@ public class ResourceInfoWriter {
 
         }
         writer.writeEndElement(); // "Languages" element
-
-        final List<String> availableDataViews = resourceInfo.getAvailableDataViews();
-        writer.writeStartElement(FCS_RESOURCE_INFO_NS, "AvailableDataViews");
         
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < availableDataViews.size(); i++) {
-            sb.append(availableDataViews.get(i));
-            sb.append(" ");
-        }        
-        writer.writeAttribute("ref", sb.toString().trim());
-        
-        writer.writeEndElement(); // "Languages" element
-
+        if (!defaultNS && prefix.equals(EndpointDescriptionWriter.PREFIX)){
+	        final List<String> availableDataViews = resourceInfo.getAvailableDataViews();
+	        writer.writeStartElement(FCS_RESOURCE_INFO_NS, "AvailableDataViews");
+	        
+	        StringBuilder sb = new StringBuilder();
+	        for (int i = 0; i < availableDataViews.size(); i++) {
+	            sb.append(availableDataViews.get(i));
+	            sb.append(" ");
+	        }        
+	        writer.writeAttribute("ref", sb.toString().trim());
+	        
+	        writer.writeEndElement(); // "AvailableDataViews" element
+        }
         
         if (recursive && resourceInfo.hasSubResources()) {
             writer.writeStartElement(FCS_RESOURCE_INFO_NS,
