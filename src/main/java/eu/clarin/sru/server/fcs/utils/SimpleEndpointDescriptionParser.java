@@ -525,8 +525,4 @@ public class SimpleEndpointDescriptionParser {
         }
     }
 
-
-//    private static List<ResourceInfo> parseLegacy(Document doc)
-//            throws SRUConfigException, XPathExpressionException {
-
 } // class SimpleResourceInfoInventoryParser
