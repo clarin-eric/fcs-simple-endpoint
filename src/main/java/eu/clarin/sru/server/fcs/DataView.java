@@ -1,72 +1,86 @@
 package eu.clarin.sru.server.fcs;
 
+/**
+ * This class is used to hold information about a data view that is implemented
+ * by the endpoint.
+ */
 public class DataView {
+    /**
+     * Enumeration to indicate the delivery policy of a data view.
+     */
+    public enum DeliveryPolicy {
+        /**
+         * The data view is sent automatically  by the endpoint.
+         */
+        SEND_BY_DEFAULT,
+        /**
+         * A client must explicitly request the endpoint.
+         */
+        NEED_TO_REQUEST;
+    } // enum PayloadDelivery
+    private final String identifier;
+    private final String mimeType;
+    private final DeliveryPolicy deliveryPolicy;
 
-	public enum PayloadDelivery {
-		SEND_BY_DEFAULT, NEED_TO_REQUEST;
-		
-		@Override
-		public String toString(){
-			String str = super.toString().toLowerCase();
-			return str.replace("_", "-");
-		}
-	}
 
-	public enum PayloadDisposition {
-		INLINE, REFERENCE;
-		
-		@Override
-		public String toString(){
-			return super.toString().toLowerCase();
-		}
-	}
-	
-	private String description;
-	private String mimeType;
-	private String payloadDisposition;
-	private String payloadDelivery;
-	private String shortIdentifier;
-	
-	public DataView() {	}
-	public DataView(String description, String mimeType, 
-			PayloadDisposition payloadDisposition, PayloadDelivery payloadDelivery, 
-			String shortId){
-		this.description = description;
-		this.mimeType = mimeType;
-		this.payloadDisposition = payloadDisposition.toString();
-		this.payloadDelivery = payloadDelivery.toString();
-		this.shortIdentifier = shortId;		
-	}
-	
-	
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
-	public String getMimeType() {
-		return mimeType;
-	}
-	public void setMimeType(String mimeType) {
-		this.mimeType = mimeType;
-	}
-	public String getPayloadDisposition() {
-		return payloadDisposition;
-	}
-	public void setPayloadDisposition(String payloadDisposition) {
-		this.payloadDisposition = payloadDisposition;
-	}
-	public String getPayloadDelivery() {
-		return payloadDelivery;
-	}
-	public void setPayloadDelivery(String payloadDelivery) {
-		this.payloadDelivery = payloadDelivery;
-	}
-	public String getShortIdentifier() {
-		return shortIdentifier;
-	}
-	public void setShortIdentifier(String shortIdentifier) {
-		this.shortIdentifier = shortIdentifier;
-	}
-}
+    /**
+     * Constructor.
+     *
+     * @param identifier
+     *            a unique short identifier for the data view
+     * @param mimeType
+     *            the MIME type of the data view
+     * @param deliveryPolicy
+     *            the delivery policy for this data view
+     */
+    public DataView(String identifier, String mimeType,
+            DeliveryPolicy deliveryPolicy) {
+        if (identifier == null) {
+            throw new NullPointerException("identifier == null");
+        }
+        if (identifier.isEmpty()) {
+            throw new IllegalArgumentException("identifier is empty");
+        }
+        this.identifier = identifier;
+
+        if (mimeType == null) {
+            throw new NullPointerException("mimeType == null");
+        }
+        if (mimeType.isEmpty()) {
+            throw new IllegalArgumentException("mimeType is empty");
+        }
+        this.mimeType = mimeType;
+
+        if (deliveryPolicy == null) {
+            throw new NullPointerException("deliveryPolicy == null");
+        }
+        this.deliveryPolicy = deliveryPolicy;
+    }
+
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+
+    public String getMimeType() {
+        return mimeType;
+    }
+
+
+    public DeliveryPolicy getDeliveryPolicy() {
+        return deliveryPolicy;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getClass().getSimpleName());
+        sb.append("[");
+        sb.append("identifier=").append(identifier);
+        sb.append(", mimeType=").append(mimeType);
+        sb.append("]");
+        return sb.toString();
+    }
+} // class DataView

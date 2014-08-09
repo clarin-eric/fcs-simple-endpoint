@@ -8,29 +8,24 @@ import java.util.Map;
 /**
  * This class implements a resource info record, which provides supplementary
  * information about a resource that is available at the endpoint.
- * 
- * @see ResourceInfoInventory
+ *
+ * @see EndpointDescription
  */
 public class ResourceInfo {
     private final String pid;
-    @Deprecated
-    private final int resourceCount;
     private final Map<String, String> title;
     private final Map<String, String> description;
     private final String landingPageURI;
     private final List<String> languages;
-    private List<String> availableDataViews;
-    private List<ResourceInfo> subResources;
-    
+    private final List<DataView> availableDataViews;
+    private final List<ResourceInfo> subResources;
+
 
     /**
      * Constructor.
      *
      * @param pid
      *            the persistent identifier of the resource
-     * @param resourceCount
-     *            the number of items within the resource or <code>-1</code> if
-     *            not applicable
      * @param title
      *            the title of the resource represented as a map with pairs of
      *            language code and title
@@ -44,19 +39,21 @@ public class ResourceInfo {
      * @param languages
      *            the languages represented within this resource represented as
      *            a list of ISO-632-3 three letter language codes
+     * @param availableDataViews
+     *            the list of available data views for this resource
      * @param subResources
      *            a list of resource sub-ordinate to this resource or
      *            <code>null</code> if not applicable
      */
-    public ResourceInfo(String pid, int resourceCount,
-            Map<String, String> title, Map<String, String> description,
-            String landingPageURI, List<String> languages,
+    public ResourceInfo(String pid, Map<String, String> title,
+            Map<String, String> description, String landingPageURI,
+            List<String> languages, List<DataView> availableDataViews,
             List<ResourceInfo> subResources) {
         if (pid == null) {
-            throw new NullPointerException("id == null");
+            throw new NullPointerException("pid == null");
         }
         this.pid = pid;
-        this.resourceCount = (resourceCount > 0) ? resourceCount : -1;
+
         if (title == null) {
             throw new NullPointerException("title == null");
         }
@@ -69,6 +66,7 @@ public class ResourceInfo {
         } else {
             this.description = null;
         }
+
         this.landingPageURI = landingPageURI;
         if (languages == null) {
             throw new NullPointerException("languages == null");
@@ -77,30 +75,20 @@ public class ResourceInfo {
             throw new IllegalArgumentException("languages is empty");
         }
         this.languages = languages;
-        
+
+        if (availableDataViews == null) {
+            throw new IllegalArgumentException("availableDataViews == null");
+        }
+        this.availableDataViews =
+                Collections.unmodifiableList(availableDataViews);
+
         if ((subResources != null) && !subResources.isEmpty()) {
             this.subResources = Collections.unmodifiableList(subResources);
         } else {
             this.subResources = null;
-        }        
+        }
     }
 
-    public ResourceInfo(String pid, int resourceCount,
-            Map<String, String> title, Map<String, String> description,
-            String landingPageURI, List<String> languages,
-            List<String> availableDataViews,
-            List<ResourceInfo> subResources) {
-    	this(pid,resourceCount, title, description, landingPageURI, languages, subResources);
-    	
-    	if (availableDataViews == null){
-        	throw new IllegalArgumentException("available data views == null");
-        }
-        if (availableDataViews.isEmpty()){
-        	throw new IllegalArgumentException("available data views are empty");
-        }
-        this.availableDataViews = availableDataViews;        
-    }
-    
 
     /**
      * Get the persistent identifier of this resource.
@@ -109,19 +97,6 @@ public class ResourceInfo {
      */
     public String getPid() {
         return pid;
-    }
-
-
-    /**
-     * Get the number of resources within this resource. If this resource has
-     * sub-ordinate resources, this number should be the sum of all items within
-     * the sub-ordinate resources plus the number of items within this resource.
-     *
-     * @return a number of items or <code>-1</code> if not applicable
-     */
-    @Deprecated
-    public int getResourceCount() {
-        return resourceCount;
     }
 
 
@@ -216,9 +191,8 @@ public class ResourceInfo {
     }
 
 
-	public List<String> getAvailableDataViews() {
+	public List<DataView> getAvailableDataViews() {
 		return availableDataViews;
 	}
-
 
 } // class ResourceInfo

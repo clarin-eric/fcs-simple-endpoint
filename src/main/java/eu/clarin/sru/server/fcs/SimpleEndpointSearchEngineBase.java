@@ -1,11 +1,12 @@
 package eu.clarin.sru.server.fcs;
 
-import java.util.ArrayList;
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
+import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
@@ -29,16 +30,18 @@ import eu.clarin.sru.server.utils.SRUSearchEngineBase;
 
 
 /**
- * A base class for implementing a simple search engine to be used as a CLARIN
- * FCS endpoint.
+ * A base class for implementing a simple search engine to be used as a
+ * CLARIN-FCS endpoint.
  *
  */
 public abstract class SimpleEndpointSearchEngineBase extends
         SRUSearchEngineBase {
-    
-    private static final String X_CMD_RESOURCE_INFO = "x-cmd-resource-info";
     private static final String X_FCS_ENDPOINT_DESCRIPTION = "x-fcs-endpoint-description";
-    
+    private static final String X_CMD_RESOURCE_INFO = "x-cmd-resource-info";
+    private static final String ED_NS = "http://clarin.eu/fcs/endpoint-description";
+    private static final String ED_PREFIX = "ed";
+    private static final int ED_VERSION = 1;
+    private static final String FCS_RESOURCE_INFO_NS = "http://clarin.eu/fcs/1.0/resource-info";
     private static final String FCS_SCAN_INDEX_FCS_RESOURCE = "fcs.resource";
     private static final String FCS_SCAN_INDEX_CQL_SERVERCHOICE = "cql.serverChoice";
     private static final String FCS_SCAN_SUPPORTED_RELATION_CQL_1_1 = "scr";
@@ -46,38 +49,10 @@ public abstract class SimpleEndpointSearchEngineBase extends
     private static final String FCS_SUPPORTED_RELATION_EXACT = "exact";
     private static final Logger logger =
             LoggerFactory.getLogger(SimpleEndpointSearchEngineBase.class);
-    protected ResourceInfoInventory resourceInfoInventory;
-    
-    public List<String> capabilities;
-    public List<DataView> supportedDataViews;
-    
-    public void addEndpointCapability(String c){
-    	capabilities.add(c);
-    }
-    
-    public void addDataView(DataView d){
-    	supportedDataViews.add(d);
-    }	
-       
-    public void setCapabilities(){
-    	 logger.debug("Setting basic capability");
-         capabilities = new ArrayList<String>();
-         capabilities.add("http://clarin.eu/fcs/capability/basic-search");
-    }      
-    
-    public void setSupportedDataViews(){
-         logger.debug("Setting Generic Hits dataview");
-         supportedDataViews = new ArrayList<DataView>();
-         supportedDataViews.add(
-         		new DataView("The representation of the hit", 
-         			"application/x-clarin-fcs-hits+xml", 
-         			DataView.PayloadDisposition.INLINE, 
-         			DataView.PayloadDelivery.SEND_BY_DEFAULT, 
-         			"hits")
-         );
-    }
-    
-	/**
+    protected EndpointDescription endpointDescription;
+
+
+    /**
      * This method should not be overridden. Perform your custom initialization
      * in the {@link #doInit(ServletContext, SRUServerConfig, Map)} method
      * Instead.
@@ -88,18 +63,19 @@ public abstract class SimpleEndpointSearchEngineBase extends
     public final void init(ServletContext context, SRUServerConfig config,
             Map<String, String> params) throws SRUConfigException {
         logger.debug("initializing");
-        super.init(context, config, params);              
-        
+        super.init(context, config, params);
+
         logger.debug("initializing search engine implementation");
         doInit(context, config, params);
-        	
-        logger.debug("initizalizing resource info inventory");
-        this.resourceInfoInventory = createResourceInfoInventory(context, config, params);
-        if (this.resourceInfoInventory == null) {
-            logger.error("ClarinFCSSearchEngineBase implementation error: " +
-                    "initResourceCatalog() returned null");
-            throw new SRUConfigException("initResourceCatalog() returned no " +
-                    "valid implementation of a ResourceCatalog");
+
+        logger.debug("initizalizing endpoint description");
+        this.endpointDescription =
+                createEndpointDescription(context, config, params);
+        if (this.endpointDescription == null) {
+            logger.error("SimpleEndpointSearchEngineBase implementation " +
+                    "error: createEndpointDescription() returned null");
+            throw new SRUConfigException("createEndpointDescription() " +
+                    "returned no valid implementation of an EndpointDescription");
         }
     }
 
@@ -112,8 +88,8 @@ public abstract class SimpleEndpointSearchEngineBase extends
      */
     @Override
     public final void destroy() {
-        logger.debug("performing cleanup of resource info inventory");
-        resourceInfoInventory.destroy();
+        logger.debug("performing cleanup of endpoint description");
+        endpointDescription.destroy();
         logger.debug("performing cleanup of search engine");
         doDestroy();
         super.destroy();
@@ -124,58 +100,26 @@ public abstract class SimpleEndpointSearchEngineBase extends
     public final SRUExplainResult explain(SRUServerConfig config,
             SRURequest request, SRUDiagnosticList diagnostics)
             throws SRUException {
-    	
-        final boolean provideCmdResourceInfo =
-                parseBoolean(request.getExtraRequestData(X_CMD_RESOURCE_INFO));
-        final boolean provideFcsResourceInfo =
-                parseBoolean(request.getExtraRequestData(X_FCS_ENDPOINT_DESCRIPTION));
-                
-        if (provideCmdResourceInfo) {
-            final List<ResourceInfo> resourceInfoList =
-                    resourceInfoInventory.getResourceInfoList(
-                            ResourceInfoInventory.PID_ROOT);
-            
+
+        final boolean provideEndpointDescription =
+                parseBoolean(request.getExtraRequestData(
+                        X_FCS_ENDPOINT_DESCRIPTION));
+
+        if (provideEndpointDescription) {
             return new SRUExplainResult(diagnostics) {
                 @Override
                 public boolean hasExtraResponseData() {
-                    return provideCmdResourceInfo;
+                    return provideEndpointDescription;
                 }
+
+
                 @Override
                 public void writeExtraResponseData(XMLStreamWriter writer)
                         throws XMLStreamException {
-                    ResourceInfoWriter.writeFullResourceInfo(writer, null, resourceInfoList);
+                    writeEndpointDescription(writer);
                 }
             };
-        }
-        else if (provideFcsResourceInfo && capabilities != null 
-        		&& supportedDataViews != null){
-        	
-        	final List<ResourceInfo> resourceInfoList =
-                    resourceInfoInventory.getResourceInfoList(
-                            ResourceInfoInventory.PID_ROOT);
-        	
-//        	if (capabilities == null){
-//        		throw new SRUException(SRUConstants.SRU_GENERAL_SYSTEM_ERROR, 
-//        				"Capabilities are not set.");
-//        	}
-//        	if (supportedDataViews == null){
-//        		throw new SRUException(SRUConstants.SRU_GENERAL_SYSTEM_ERROR, 
-//        				"Supported data views are not set.");
-//        	}
-        	return new SRUExplainResult(diagnostics) {
-                @Override
-                public boolean hasExtraResponseData() {
-                    return provideFcsResourceInfo;
-                }
-                @Override
-                public void writeExtraResponseData(XMLStreamWriter writer)
-                        throws XMLStreamException {
-            		EndpointDescriptionWriter.writeEndpointDescription(writer, 
-            			capabilities, supportedDataViews, resourceInfoList);
-                }
-            };
-        }
-        else {
+        } else {
             return null;
         }
     }
@@ -190,7 +134,6 @@ public abstract class SimpleEndpointSearchEngineBase extends
      * @see #doScan(SRUServerConfig, SRURequest, SRUDiagnosticList)
      */
     @Override
-    @Deprecated
     public final SRUScanResultSet scan(SRUServerConfig config,
             SRURequest request, SRUDiagnosticList diagnostics)
             throws SRUException {
@@ -214,7 +157,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
              * Shall we provide extended resource information ... ?
              */
             final boolean provideResourceInfo = parseBoolean(
-                    request.getExtraRequestData(X_FCS_ENDPOINT_DESCRIPTION));
+                    request.getExtraRequestData(X_CMD_RESOURCE_INFO));
 
             return new SRUScanResultSet(diagnostics) {
                 private int idx = -1;
@@ -233,7 +176,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
 
                 @Override
                 public int getNumberOfRecords() {
-                    return result.get(idx).getResourceCount();
+                    return -1;
                 }
 
 
@@ -259,7 +202,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
                 public void writeExtraTermData(XMLStreamWriter writer)
                         throws XMLStreamException {
                     if (provideResourceInfo) {
-                        ResourceInfoWriter.writeResourceInfo(writer, null, result.get(idx));
+                        writeLegacyResourceInfo(writer, result.get(idx));
                     }
                 }
             };
@@ -269,26 +212,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
     }
 
 
-
-    /**
-     * Create the resource info inventory to be used with this endpoint.
-     * Implement this method to provide an implementation of a
-     * {@link ResourceInfoInventory} that is tailored towards your environment
-     * and needs.
-     *
-     * @param context
-     *            the {@link ServletContext} for the Servlet
-     * @param config
-     *            the {@link SRUServerConfig} object for this search engine
-     * @param params
-     *            additional parameters gathered from the Servlet configuration
-     *            and Servlet context.
-     * @return an instance of a {@link ResourceInfoInventory} used by this
-     *         search engine
-     * @throws SRUConfigException
-     *             if an error occurred
-     */
-    protected abstract ResourceInfoInventory createResourceInfoInventory(
+    protected abstract EndpointDescription createEndpointDescription(
             ServletContext context, SRUServerConfig config,
             Map<String, String> params) throws SRUConfigException;
 
@@ -327,7 +251,6 @@ public abstract class SimpleEndpointSearchEngineBase extends
      * @see SRUSearchEngine#explain(SRUServerConfig, SRURequest,
      *      SRUDiagnosticList)
      */
-    @Deprecated
     protected SRUScanResultSet doScan(SRUServerConfig config,
             SRURequest request, SRUDiagnosticList diagnostics)
             throws SRUException {
@@ -363,7 +286,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
         return false;
     }
 
-    @Deprecated
+
     private List<ResourceInfo> translateFcsScanResource(CQLNode scanClause)
             throws SRUException {
         if (scanClause instanceof CQLTermNode) {
@@ -385,6 +308,8 @@ public abstract class SimpleEndpointSearchEngineBase extends
                 return null;
             }
 
+            logger.warn("scan on 'fcs.resource' for endpoint resource " +
+                    "enumeration is deprecated.");
 
             // only allow "=" relation without any modifiers
             final CQLRelation relationNode = root.getRelation();
@@ -421,7 +346,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
             if ((FCS_SCAN_INDEX_CQL_SERVERCHOICE.equals(index) &&
                     FCS_SCAN_INDEX_FCS_RESOURCE.equals(term)) ||
                     (FCS_SCAN_INDEX_FCS_RESOURCE.equals(index))) {
-                results = resourceInfoInventory.getResourceInfoList(term);
+                results = endpointDescription.getResourceList(term);
             }
             if ((results == null) || results.isEmpty()) {
                 return Collections.emptyList();
@@ -435,6 +360,262 @@ public abstract class SimpleEndpointSearchEngineBase extends
     }
 
 
-    
+    private void writeEndpointDescription(XMLStreamWriter writer)
+            throws XMLStreamException {
+        writer.setPrefix(ED_PREFIX, ED_NS);
+        writer.writeStartElement(ED_NS, "EndpointDescription");
+        writer.writeNamespace(ED_PREFIX, ED_NS);
+        writer.writeAttribute("version", Integer.toString(ED_VERSION));
+
+        // capabilities
+        writer.writeStartElement(ED_NS, "Capabilities");
+        for (URI capability : endpointDescription.getCapabilities()) {
+            writer.writeStartElement(ED_NS, "Capability");
+            writer.writeCharacters(capability.toString());
+            writer.writeEndElement(); // "Capability" element
+        }
+        writer.writeEndElement(); // "Capabilities" element
+
+        // supported data views
+        writer.writeStartElement(ED_NS, "SupportedDataViews");
+        for (DataView dataView : endpointDescription.getSupportedDataViews()) {
+            writer.writeStartElement(ED_NS, "SupportedDataView");
+            writer.writeAttribute("id", dataView.getIdentifier());
+            String s;
+            switch (dataView.getDeliveryPolicy()) {
+            case SEND_BY_DEFAULT:
+                s = "send-by-default";
+                break;
+            case NEED_TO_REQUEST:
+                s = "need-to-request";
+                break;
+            default:
+                throw new XMLStreamException(
+                        "invalid value for payload delivery policy: " +
+                                dataView.getDeliveryPolicy());
+            } // switch
+            writer.writeAttribute("delivery-policy", s);
+            writer.writeCharacters(dataView.getMimeType());
+            writer.writeEndElement(); // "SupportedDataView" element
+        }
+        writer.writeEndElement(); // "SupportedDataViews" element
+
+        try {
+            // resources
+            List<ResourceInfo> resources =
+                    endpointDescription.getResourceList(
+                            EndpointDescription.PID_ROOT);
+            writeResourceInfos(writer, resources);
+        } catch (SRUException e) {
+            throw new XMLStreamException("error retriving top-level resources",
+                    e);
+        }
+        writer.writeEndElement(); // "EndpointDescription" element
+    }
+
+
+    private void writeResourceInfos(XMLStreamWriter writer,
+            List<ResourceInfo> resources) throws XMLStreamException {
+        if (resources == null) {
+            throw new NullPointerException("resources == null");
+        }
+        if (!resources.isEmpty()) {
+            writer.writeStartElement(ED_NS, "Resources");
+
+            for (ResourceInfo resource : resources) {
+                writer.writeStartElement(ED_NS, "Resource");
+                writer.writeAttribute("pid", resource.getPid());
+
+                // title
+                final Map<String, String> title = resource.getTitle();
+                for (Map.Entry<String, String> i : title.entrySet()) {
+                    writer.setPrefix(XMLConstants.XML_NS_PREFIX,
+                            XMLConstants.XML_NS_URI);
+                    writer.writeStartElement(ED_NS, "Title");
+                    writer.writeAttribute(XMLConstants.XML_NS_URI, "lang", i.getKey());
+                    writer.writeCharacters(i.getValue());
+                    writer.writeEndElement(); // "title" element
+                }
+
+                // description
+                final Map<String, String> description = resource.getDescription();
+                if (description != null) {
+                    for (Map.Entry<String, String> i : description.entrySet()) {
+                        writer.writeStartElement(ED_NS, "Description");
+                        writer.writeAttribute(XMLConstants.XML_NS_URI, "lang",
+                                i.getKey());
+                        writer.writeCharacters(i.getValue());
+                        writer.writeEndElement(); // "Description" element
+                    }
+                }
+
+                // landing page
+                final String landingPageURI = resource.getLandingPageURI();
+                if (landingPageURI != null) {
+                    writer.writeStartElement(ED_NS, "LandingPageURI");
+                    writer.writeCharacters(landingPageURI);
+                    writer.writeEndElement(); // "LandingPageURI" element
+                }
+
+                // languages
+                final List<String> languages = resource.getLanguages();
+                writer.writeStartElement(ED_NS, "Languages");
+                for (String i : languages) {
+                    writer.writeStartElement(ED_NS, "Language");
+                    writer.writeCharacters(i);
+                    writer.writeEndElement(); // "Language" element
+
+                }
+                writer.writeEndElement(); // "Languages" element
+
+                // available data views
+                StringBuilder sb = new StringBuilder();
+                for (DataView dataview : resource.getAvailableDataViews()) {
+                    if (sb.length() > 0) {
+                        sb.append(" ");
+                    }
+                    sb.append(dataview.getIdentifier());
+                }
+                writer.writeEmptyElement(ED_NS, "AvailableDataViews");
+                writer.writeAttribute("ref", sb.toString());
+
+                // child resources
+                List<ResourceInfo> subs = resource.getSubResources();
+                if ((subs != null) && !subs.isEmpty()) {
+                    writeResourceInfos(writer, subs);
+                }
+
+                writer.writeEndElement(); // "Resource" element
+            }
+            writer.writeEndElement(); // "Resources" element
+        }
+    }
+
+
+    private void writeLegacyResourceInfo(XMLStreamWriter writer,
+            ResourceInfo resourceInfo) throws XMLStreamException {
+        writer.setDefaultNamespace(FCS_RESOURCE_INFO_NS);
+        writer.writeStartElement(FCS_RESOURCE_INFO_NS, "ResourceInfo");
+        writer.writeDefaultNamespace(FCS_RESOURCE_INFO_NS);
+
+        // title
+        final Map<String, String> title = resourceInfo.getTitle();
+        for (Map.Entry<String, String> i : title.entrySet()) {
+            writer.setPrefix(XMLConstants.XML_NS_PREFIX,
+                    XMLConstants.XML_NS_URI);
+            writer.writeStartElement(FCS_RESOURCE_INFO_NS, "Title");
+            writer.writeAttribute(XMLConstants.XML_NS_URI, "lang", i.getKey());
+            writer.writeCharacters(i.getValue());
+            writer.writeEndElement(); // "title" element
+        }
+
+        // description
+        final Map<String, String> description = resourceInfo.getDescription();
+        if (description != null) {
+            for (Map.Entry<String, String> i : description.entrySet()) {
+                writer.writeStartElement(FCS_RESOURCE_INFO_NS, "Description");
+                writer.writeAttribute(XMLConstants.XML_NS_URI, "lang",
+                        i.getKey());
+                writer.writeCharacters(i.getValue());
+                writer.writeEndElement(); // "Description" element
+            }
+        }
+
+        // landing page
+        final String landingPageURI = resourceInfo.getLandingPageURI();
+        if (landingPageURI != null) {
+            writer.writeStartElement(FCS_RESOURCE_INFO_NS, "LandingPageURI");
+            writer.writeCharacters(landingPageURI);
+            writer.writeEndElement(); // "LandingPageURI" element
+        }
+
+        // languages
+        final List<String> languages = resourceInfo.getLanguages();
+        writer.writeStartElement(FCS_RESOURCE_INFO_NS, "Languages");
+        for (String i : languages) {
+            writer.writeStartElement(FCS_RESOURCE_INFO_NS, "Language");
+            writer.writeCharacters(i);
+            writer.writeEndElement(); // "Language" element
+
+        }
+        writer.writeEndElement(); // "Languages" element
+        writer.writeEndElement(); // "ResourceInfo" element
+    }
+
+
+//             final boolean defaultNS = ((prefix == null) || prefix.isEmpty());
+//            if (writeNS) {
+//                 if (defaultNS) {
+//                     writer.setDefaultNamespace(FCS_RESOURCE_INFO_NS);
+//                } else {
+//                    writer.setPrefix(prefix, FCS_RESOURCE_INFO_NS);
+//                }
+//            }
+//            writer.writeStartElement(FCS_RESOURCE_INFO_NS, "ResourceInfo");
+//            if (writeNS) {
+//                if (defaultNS) {
+//                    writer.writeDefaultNamespace(FCS_RESOURCE_INFO_NS);
+//                 } else {
+//                    writer.writeNamespace(prefix, FCS_RESOURCE_INFO_NS);
+//                 }
+//          } )
+//}
+
+//    public static void XwriteResourceInfo(XMLStreamWriter writer, String prefix,
+//            ResourceInfo resourceInfo) throws XMLStreamException {
+//        doWriteResourceInfo(writer, prefix, resourceInfo, true, false);
+//    }
+//
+//
+//    private static void XdoWriteResourceInfo(XMLStreamWriter writer,
+//            String prefix, ResourceInfo resourceInfo, boolean writeNS,
+//            boolean recursive) throws XMLStreamException {
+//
+//        if (writer == null) {
+//            throw new NullPointerException("writer == null");
+//        }
+//        if (resourceInfo == null) {
+//            throw new NullPointerException("resourceInfo == null");
+//        }
+//
+//        final boolean defaultNS = ((prefix == null) || prefix.isEmpty());
+//        if (writeNS) {
+//            if (defaultNS) {
+//                writer.setDefaultNamespace(FCS_RESOURCE_INFO_NS);
+//            } else {
+//                writer.setPrefix(prefix, FCS_RESOURCE_INFO_NS);
+//            }
+//        }
+//        writer.writeStartElement(FCS_RESOURCE_INFO_NS, "Resource");
+//        if (writeNS) {
+//            if (defaultNS) {
+//                writer.writeDefaultNamespace(FCS_RESOURCE_INFO_NS);
+//            } else {
+//                writer.writeNamespace(prefix, FCS_RESOURCE_INFO_NS);
+//            }
+//        }
+//        if (recursive) {
+//            /*
+//             * HACK: only output @pid for recursive (= explain) requests.
+//             * This should be revisited, if we decide to go for the explain
+//             * style enumeration of resources.
+//             */
+//            writer.writeAttribute("pid", resourceInfo.getPid());
+//        }
+//        if (resourceInfo.hasSubResources()) {
+//            writer.writeAttribute("hasSubResources", "true");
+//        }
+//
+//
+//        if (recursive && resourceInfo.hasSubResources()) {
+//            writer.writeStartElement(FCS_RESOURCE_INFO_NS,
+//                    "ResourceInfoCollection");
+//            for (ResourceInfo r : resourceInfo.getSubResources()) {
+//                doWriteResourceInfo(writer, prefix, r, writeNS, recursive);
+//            }
+//            writer.writeEndElement(); // "ResourceCollection" element
+//        }
+//        writer.writeEndElement(); // "ResourceInfo" element
+//    }
 
 } // class SimpleEndpointSearchEngineBase
