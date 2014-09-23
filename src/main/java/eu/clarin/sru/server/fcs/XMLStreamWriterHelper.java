@@ -15,16 +15,20 @@ import javax.xml.stream.XMLStreamWriter;
  *      CLARIN FCS specification, section "Operation searchRetrieve"</a>
  */
 public final class XMLStreamWriterHelper {
-    private static final String FCS_NS          = "http://clarin.eu/fcs/1.0";
-    private static final String FCS_PREFIX      = "fcs";
+    private static final String FCS_NS          =
+            "http://clarin.eu/fcs/resource";
+    private static final String FCS_PREFIX      =
+            "fcs";
     private static final String FCS_KWIC_NS     =
             "http://clarin.eu/fcs/1.0/kwic";
-    private static final String FCS_KWIC_PREFIX = "kwic";
+    private static final String FCS_KWIC_PREFIX =
+            "kwic";
     private static final String FCS_KWIC_MIMETYPE =
             "application/x-clarin-fcs-kwic+xml";
     private static final String FCS_HITS_NS =
             "http://clarin.eu/fcs/dataview/hits";
-    private static final String FCS_HITS_PREFIX = "hits";
+    private static final String FCS_HITS_PREFIX =
+            "hits";
     private static final String FCS_HITS_MIMETYPE =
             "application/x-clarin-fcs-hits+xml";
 
@@ -353,7 +357,7 @@ public final class XMLStreamWriterHelper {
 
 
     /**
-     * Convince method for writing a record with a KWIC data view. The following
+     * Convince method for writing a record with a HITS data view. The following
      * code (arguments omitted) would accomplish the same result:
      *
      * <pre>
@@ -524,6 +528,57 @@ public final class XMLStreamWriterHelper {
 
         writeStartResource(writer, pid, ref);
         writeHitsDataView(writer, text, hits, secondIsLength);
+        writeEndResource(writer);
+    }
+
+
+    /**
+     * Convince method for writing a record with a HITS and a KWIC data view.
+     * This method is intended for applications that want ensure computability
+     * to legacy CLARIN-FCS clients The following code (arguments omitted) would
+     * accomplish the same result:
+     *
+     * <pre>
+     * ...
+     * writeStartResource(...);
+     * writeHitsDataView(...);
+     * writeKWICDataView(...);
+     * writeEndResource(...);
+     * ...
+     * </pre>
+     *
+     * @param writer
+     *            the {@link XMLStreamWriter} to be used
+     * @param pid
+     *            the persistent identifier of this resource or
+     *            <code>null</code>, if not applicable
+     * @param ref
+     *            the reference of this resource or <code>null</code>, if not
+     *            applicable
+     * @param left
+     *            the left context of the hit or <code>null</code> if not
+     *            applicable
+     * @param hit
+     *            the actual hit, that will be highlighted
+     * @param right
+     *            the right context of the hit or <code>null</code> if not
+     *            applicable
+     * @throws XMLStreamException
+     *             if an error occurred
+     * @deprecated Only use, if you want compatability to legacy FCS
+     *             applications.
+     */
+    @Deprecated
+    public static void writeResourceWithHitsDataViewLegacy(XMLStreamWriter writer,
+            String pid, String ref, String left, String hit, String right)
+            throws XMLStreamException {
+        if (writer == null) {
+            throw new NullPointerException("writer == null");
+        }
+
+        writeStartResource(writer, pid, ref);
+        writeHitsDataView(writer, left, hit, right);
+        writeKWICDataView(writer, left, hit, right);
         writeEndResource(writer);
     }
 

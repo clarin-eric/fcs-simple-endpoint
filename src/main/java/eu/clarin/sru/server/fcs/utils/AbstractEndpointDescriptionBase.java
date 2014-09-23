@@ -35,6 +35,12 @@ public abstract class AbstractEndpointDescriptionBase implements EndpointDescrip
         if (capabilities.isEmpty()) {
             throw new IllegalArgumentException("capabilities are empty");
         }
+        for (URI capability : capabilities) {
+            if (capability == null) {
+                throw new IllegalArgumentException(
+                        "capabilities must not contain a 'null' item");
+            }
+        }
         this.capabilities = Collections.unmodifiableList(capabilities);
 
         if (supportedDataViews == null) {
@@ -42,6 +48,12 @@ public abstract class AbstractEndpointDescriptionBase implements EndpointDescrip
         }
         if (supportedDataViews.isEmpty()) {
             throw new IllegalArgumentException("supportedDataViews are empty");
+        }
+        for (DataView supportedDataView : supportedDataViews) {
+            if (supportedDataView == null) {
+                throw new IllegalArgumentException(
+                        "supportedDataViews must not contain a 'null' item");
+            }
         }
         this.supportedDataViews =
                 Collections.unmodifiableList(supportedDataViews);

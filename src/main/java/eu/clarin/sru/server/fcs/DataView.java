@@ -58,16 +58,32 @@ public class DataView {
     }
 
 
+    /**
+     * Get the identifier of this data view.
+     * 
+     * @return the identifier of the data view
+     */
     public String getIdentifier() {
         return identifier;
     }
 
 
+    /**
+     * Get the MIME type of this data view.
+     * 
+     * @return the MIME type of this data view
+     */
     public String getMimeType() {
         return mimeType;
     }
 
 
+    /**
+     * Get the delivery policy for this data view.
+     * 
+     * @return the delivery policy of this data view
+     * @see DeliveryPolicy
+     */
     public DeliveryPolicy getDeliveryPolicy() {
         return deliveryPolicy;
     }
@@ -83,4 +99,5 @@ public class DataView {
         sb.append("]");
         return sb.toString();
     }
+
 } // class DataView

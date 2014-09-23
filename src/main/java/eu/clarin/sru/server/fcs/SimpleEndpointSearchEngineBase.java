@@ -36,6 +36,8 @@ import eu.clarin.sru.server.utils.SRUSearchEngineBase;
  */
 public abstract class SimpleEndpointSearchEngineBase extends
         SRUSearchEngineBase {
+    private static final String FCS_DISABLE_LEGECY_MODE =
+            "eu.clarin.sru.server.fcs.disableLegacyMode";
     private static final String X_FCS_ENDPOINT_DESCRIPTION = "x-fcs-endpoint-description";
     private static final String X_CMD_RESOURCE_INFO = "x-cmd-resource-info";
     private static final String ED_NS = "http://clarin.eu/fcs/endpoint-description";
@@ -50,6 +52,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
     private static final Logger logger =
             LoggerFactory.getLogger(SimpleEndpointSearchEngineBase.class);
     protected EndpointDescription endpointDescription;
+    private boolean disableLegecyMode;
 
 
     /**
@@ -76,6 +79,13 @@ public abstract class SimpleEndpointSearchEngineBase extends
                     "error: createEndpointDescription() returned null");
             throw new SRUConfigException("createEndpointDescription() " +
                     "returned no valid implementation of an EndpointDescription");
+        }
+
+        if (params.containsKey(FCS_DISABLE_LEGECY_MODE)) {
+            logger.info("disabling FCS legacy mode");
+            this.disableLegecyMode = false;
+        } else {
+            this.disableLegecyMode = true;
         }
     }
 
@@ -137,75 +147,80 @@ public abstract class SimpleEndpointSearchEngineBase extends
     public final SRUScanResultSet scan(SRUServerConfig config,
             SRURequest request, SRUDiagnosticList diagnostics)
             throws SRUException {
-        /*
-         * Check if we got a scan on fcs.resource. If yes, handle it
-         * accordingly, otherwise delegate to user-provided implementation.
-         */
-        final List<ResourceInfo> result =
-                translateFcsScanResource(request.getScanClause());
-        if (result != null) {
+
+        if (isLegacyMode()) {
             /*
-             * Make sure, we honor the maximumTerms limit, of the client
-             * requests it ...
+             * Check if we got a scan on fcs.resource. If yes, handle it
+             * accordingly, otherwise delegate to user-provided implementation.
              */
-            final int maxTerms
-                = ((result.size() > 0) && (request.getMaximumTerms() > 0))
-                ? Math.min(result.size(), request.getMaximumTerms())
-                : result.size();
+            final List<ResourceInfo> result = translateFcsScanResource(request
+                    .getScanClause());
+            if (result != null) {
+                /*
+                 * Make sure, we honor the maximumTerms limit, of the client
+                 * requests it ...
+                 */
+                final int maxTerms = ((result.size() > 0) && (request
+                        .getMaximumTerms() > 0)) ? Math.min(result.size(),
+                        request.getMaximumTerms()) : result.size();
 
-            /*
-             * Shall we provide extended resource information ... ?
-             */
-            final boolean provideResourceInfo = parseBoolean(
-                    request.getExtraRequestData(X_CMD_RESOURCE_INFO));
+                /*
+                 * Shall we provide extended resource information ... ?
+                 */
+                final boolean provideResourceInfo = parseBoolean(request
+                        .getExtraRequestData(X_CMD_RESOURCE_INFO));
 
-            return new SRUScanResultSet(diagnostics) {
-                private int idx = -1;
-
-                @Override
-                public boolean nextTerm() {
-                    return (result != null) && (++idx < maxTerms);
-                }
-
-
-                @Override
-                public String getValue() {
-                    return result.get(idx).getPid();
-                }
+                return new SRUScanResultSet(diagnostics) {
+                    private int idx = -1;
 
 
-                @Override
-                public int getNumberOfRecords() {
-                    return -1;
-                }
-
-
-                @Override
-                public String getDisplayTerm() {
-                    return result.get(idx).getTitle("en");
-                }
-
-
-                @Override
-                public WhereInList getWhereInList() {
-                    return null;
-                }
-
-
-                @Override
-                public boolean hasExtraTermData() {
-                    return provideResourceInfo;
-                }
-
-
-                @Override
-                public void writeExtraTermData(XMLStreamWriter writer)
-                        throws XMLStreamException {
-                    if (provideResourceInfo) {
-                        writeLegacyResourceInfo(writer, result.get(idx));
+                    @Override
+                    public boolean nextTerm() {
+                        return (result != null) && (++idx < maxTerms);
                     }
-                }
-            };
+
+
+                    @Override
+                    public String getValue() {
+                        return result.get(idx).getPid();
+                    }
+
+
+                    @Override
+                    public int getNumberOfRecords() {
+                        return -1;
+                    }
+
+
+                    @Override
+                    public String getDisplayTerm() {
+                        return result.get(idx).getTitle("en");
+                    }
+
+
+                    @Override
+                    public WhereInList getWhereInList() {
+                        return null;
+                    }
+
+
+                    @Override
+                    public boolean hasExtraTermData() {
+                        return provideResourceInfo;
+                    }
+
+
+                    @Override
+                    public void writeExtraTermData(XMLStreamWriter writer)
+                            throws XMLStreamException {
+                        if (provideResourceInfo) {
+                            writeLegacyResourceInfo(writer, result.get(idx));
+                        }
+                    }
+                };
+            } else {
+                return doScan(config, request, diagnostics);
+            }
         } else {
             return doScan(config, request, diagnostics);
         }
@@ -540,6 +555,19 @@ public abstract class SimpleEndpointSearchEngineBase extends
         }
         writer.writeEndElement(); // "Languages" element
         writer.writeEndElement(); // "ResourceInfo" element
+    }
+
+
+    /**
+     * Check, if running in legacy mode. Only intended for comparability with
+     * legacy clients until the new CLARIN-FCS specification is deployed on a
+     * larger scale.
+     *
+     * @return <code>true</code> if running in legacy mode, <code>false</code>
+     *         otherwise
+     */
+    protected boolean isLegacyMode() {
+        return !disableLegecyMode;
     }
 
 } // class SimpleEndpointSearchEngineBase
