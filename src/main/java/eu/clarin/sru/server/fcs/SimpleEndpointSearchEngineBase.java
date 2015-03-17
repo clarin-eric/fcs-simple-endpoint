@@ -168,6 +168,19 @@ public abstract class SimpleEndpointSearchEngineBase extends
      * Handle a <em>scan</em> operation. The default implementation is a no-op.
      * Override this method, if you want to provide a custom behavior.
      *
+     * @param config
+     *            the <code>SRUEndpointConfig</code> object that contains the
+     *            endpoint configuration
+     * @param request
+     *            the <code>SRURequest</code> object that contains the request
+     *            made to the endpoint
+     * @param diagnostics
+     *            the <code>SRUDiagnosticList</code> object for storing
+     *            non-fatal diagnostics
+     * @return a <code>SRUScanResultSet</code> object or <code>null</code> if
+     *         this operation is not supported by this search engine
+     * @throws SRUException
+     *             if an fatal error occurred
      * @see SRUSearchEngine#scan(SRUServerConfig, SRURequest, SRUDiagnosticList)
      * @deprecated override
      *             {@link #scan(SRUServerConfig, SRURequest, SRUDiagnosticList)}
