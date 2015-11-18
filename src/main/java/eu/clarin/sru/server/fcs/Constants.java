@@ -19,6 +19,9 @@ public final class Constants {
             FCS_DIAGNOSTIC_URI_PREFIX + 4;
 
 
+    public static final String FCS_QUERY_TYPE = "fcs";
+
+
     /* hide constructor */
     private Constants() {
     }
