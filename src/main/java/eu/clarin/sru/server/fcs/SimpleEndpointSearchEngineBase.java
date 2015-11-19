@@ -38,7 +38,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
     private static final String ED_NS =
             "http://clarin.eu/fcs/endpoint-description";
     private static final String ED_PREFIX = "ed";
-    private static final int ED_VERSION = 1;
+    private static final int ED_VERSION = 2;
     private static final Logger logger =
             LoggerFactory.getLogger(SimpleEndpointSearchEngineBase.class);
     protected EndpointDescription endpointDescription;
@@ -238,7 +238,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
         writer.writeNamespace(ED_PREFIX, ED_NS);
         writer.writeAttribute("version", Integer.toString(ED_VERSION));
 
-        // capabilities
+        // Capabilities
         writer.writeStartElement(ED_NS, "Capabilities");
         for (URI capability : endpointDescription.getCapabilities()) {
             writer.writeStartElement(ED_NS, "Capability");
@@ -247,7 +247,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
         }
         writer.writeEndElement(); // "Capabilities" element
 
-        // supported data views
+        // SupportedDataViews
         writer.writeStartElement(ED_NS, "SupportedDataViews");
         for (DataView dataView : endpointDescription.getSupportedDataViews()) {
             writer.writeStartElement(ED_NS, "SupportedDataView");
@@ -271,8 +271,38 @@ public abstract class SimpleEndpointSearchEngineBase extends
         }
         writer.writeEndElement(); // "SupportedDataViews" element
 
+        // SupportedLayers
+        final List<Layer> layers = endpointDescription.getSupportedLayers();
+        if (layers != null) {
+            writer.writeStartElement(ED_NS, "SupportedLayers");
+            for (Layer layer : layers) {
+                writer.writeStartElement(ED_NS, "SupportedLayer");
+                writer.writeAttribute("id", layer.getId());
+                writer.writeAttribute("result-id",
+                        layer.getResultId().toString());
+                if (layer.getContentEncoding() == Layer.ContentEncoding.EMPTY) {
+                    writer.writeAttribute("type", "empty");
+                }
+                if (layer.getQualifier() != null) {
+                    writer.writeAttribute("qualifier", layer.getQualifier());
+                }
+                if (layer.getAltValueInfo() != null) {
+                    writer.writeAttribute("alt-value-info",
+                            layer.getAltValueInfo());
+                    if (layer.getAltValueInfoURI() != null) {
+                        writer.writeAttribute("alt-value-info-uri",
+                                layer.getAltValueInfoURI());
+                    }
+                }
+                writer.writeCharacters(layer.getType());
+                writer.writeEndElement(); // "SupportedLayer" element
+            }
+            writer.writeEndElement(); // "SupportedLayers" element
+
+        }
+
+        // Resources
         try {
-            // resources
             List<ResourceInfo> resources =
                     endpointDescription.getResourceList(
                             EndpointDescription.PID_ROOT);
@@ -349,6 +379,19 @@ public abstract class SimpleEndpointSearchEngineBase extends
                 }
                 writer.writeEmptyElement(ED_NS, "AvailableDataViews");
                 writer.writeAttribute("ref", sb.toString());
+
+                final List<Layer> layers = resource.getAvailableLayers();
+                if (layers != null) {
+                    sb = new StringBuilder();
+                    for (Layer layer : resource.getAvailableLayers()) {
+                        if (sb.length() > 0) {
+                            sb.append(" ");
+                        }
+                        sb.append(layer.getId());
+                    }
+                    writer.writeEmptyElement(ED_NS, "AvailableLayers");
+                    writer.writeAttribute("ref", sb.toString());
+                }
 
                 // child resources
                 List<ResourceInfo> subs = resource.getSubResources();

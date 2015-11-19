@@ -35,6 +35,7 @@ import eu.clarin.sru.server.SRUConfigException;
 import eu.clarin.sru.server.fcs.DataView;
 import eu.clarin.sru.server.fcs.DataView.DeliveryPolicy;
 import eu.clarin.sru.server.fcs.EndpointDescription;
+import eu.clarin.sru.server.fcs.Layer;
 import eu.clarin.sru.server.fcs.ResourceInfo;
 
 
@@ -53,8 +54,10 @@ public class SimpleEndpointDescriptionParser {
             "http://clarin.eu/fcs/endpoint-description";
     private static final String NS_LEGACY =
             "http://clarin.eu/fcs/1.0/resource-info";
-    private static final String CAP_BASIC_SEARCH =
-            "http://clarin.eu/fcs/capability/basic-search";
+    private static final URI CAP_BASIC_SEARCH =
+            URI.create("http://clarin.eu/fcs/capability/basic-search");
+    private static final URI CAP_ADVANCED_SEARCH =
+            URI.create("http://clarin.eu/fcs/capability/advanced-search");
     private static final String LANG_EN = "en";
     private static final String POLICY_SEND_DEFAULT = "send-by-default";
     private static final String POLICY_NEED_REQUEST = "need-to-request";
@@ -139,13 +142,14 @@ public class SimpleEndpointDescriptionParser {
 
         // capabilities
         List<URI> capabilities = new ArrayList<URI>();
-        XPathExpression exp1 =
+        XPathExpression exp =
                 xpath.compile("//ed:Capabilities/ed:Capability");
-        NodeList list1 = (NodeList) exp1.evaluate(doc, XPathConstants.NODESET);
-        if ((list1 != null) && (list1.getLength() > 0)) {
+        NodeList list =
+                (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
+        if ((list != null) && (list.getLength() > 0)) {
             logger.debug("parsing capabilities");
-            for (int i = 0; i < list1.getLength(); i++) {
-                String s = list1.item(i).getTextContent().trim();
+            for (int i = 0; i < list.getLength(); i++) {
+                String s = list.item(i).getTextContent().trim();
                 try {
                     URI uri = new URI(s);
                     if (capabilities.contains(uri)) {
@@ -162,24 +166,22 @@ public class SimpleEndpointDescriptionParser {
             logger.warn("No capabilities where defined in " +
                     "endpoint configuration");
         }
-        URI cap = URI.create(CAP_BASIC_SEARCH);
-        if (!capabilities.contains(cap)) {
+        if (!capabilities.contains(CAP_BASIC_SEARCH)) {
             logger.warn("capability '{}' was not defined in endpoint " +
                     "description; added it to meet specification. Please " +
                     "update your endpoint description!", CAP_BASIC_SEARCH);
-            capabilities.add(cap);
+            capabilities.add(CAP_BASIC_SEARCH);
         }
         logger.debug("CAPS:'{}'", capabilities);
 
         // supported data views
         List<DataView> supportedDataViews = new ArrayList<DataView>();
-        XPathExpression exp2 =
-                xpath.compile("//ed:SupportedDataViews/ed:SupportedDataView");
-        NodeList list2 = (NodeList) exp2.evaluate(doc, XPathConstants.NODESET);
-        if ((list2 != null) && (list2.getLength() > 0)) {
+        exp = xpath.compile("//ed:SupportedDataViews/ed:SupportedDataView");
+        list = (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
+        if ((list != null) && (list.getLength() > 0)) {
             logger.debug("parsing supported data views");
-            for (int i = 0; i < list2.getLength(); i++) {
-                Element item = (Element) list2.item(i);
+            for (int i = 0; i < list.getLength(); i++) {
+                Element item = (Element) list.item(i);
                 String id = getAttribute(item, "id");
                 if (id == null) {
                     throw new SRUConfigException("Element <SupportedDataView> "
@@ -237,13 +239,78 @@ public class SimpleEndpointDescriptionParser {
         logger.debug("DV: {}", supportedDataViews);
 
 
+        // supported layers
+        List<Layer> supportedLayers = null;
+        exp = xpath.compile("//ed:SupportedLayers/ed:SupportedLayer");
+        list = (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
+        if ((list != null) && (list.getLength() > 0)) {
+            logger.debug("parsing supported layers");
+            for (int i = 0; i < list.getLength(); i++) {
+                Element item = (Element) list.item(i);
+                String id = getAttribute(item, "id");
+                if (id == null) {
+                    throw new SRUConfigException("Element <ed:SupportedLayer> "
+                            + "must carry a proper 'id' attribute");
+                }
+                String s = getAttribute(item, "result-id");
+                if (s == null) {
+                    throw new SRUConfigException("Element <ed:SupportedLayer> "
+                            + "must carry a proper 'result-id' attribute");
+                }
+                URI resultId = null;
+                try {
+                    resultId = new URI(s);
+                } catch (URISyntaxException e) {
+                    throw new SRUConfigException("Attribute 'result-id' on " +
+                            "Element <ed:SupportedLayer> is not encoded " +
+                            "as proper URI: " + s);
+                }
+
+                String type = cleanString(item.getTextContent());
+                if ((type != null) && !type.isEmpty()) {
+
+                } else {
+                    throw new SRUConfigException("Element <ed:SupportedLayer> "
+                            + "as no proper type");
+                }
+
+                String qualifier = getAttribute(item, "qualifier");
+
+                // FIXME: implement parsing of content encoding!
+                Layer.ContentEncoding encoding =
+                        Layer.ContentEncoding.VALUE;
+
+                String altValueInfo = getAttribute(item, "alt-value-info");
+                String altValueInfoURI = null;
+                if (altValueInfo != null) {
+                    altValueInfoURI = getAttribute(item, "alt-value-info-uri");
+                }
+
+
+
+                if (supportedLayers == null) {
+                    supportedLayers = new ArrayList<Layer>(list.getLength());
+                }
+                supportedLayers.add(new Layer(id, resultId, type, encoding,
+                        qualifier, altValueInfo, altValueInfoURI));
+            }
+        }
+
+        if ((supportedLayers != null) &&
+                !capabilities.contains(CAP_ADVANCED_SEARCH)) {
+                logger.warn("capability '{}' was not defined in endpoint " +
+                        "description; added it to meet specification. Please " +
+                        "update your endpoint description!", CAP_ADVANCED_SEARCH);
+                capabilities.add(CAP_ADVANCED_SEARCH);
+        }
+        logger.debug("L: {}", supportedLayers);
+
         // resources
-        XPathExpression x3 =
-                xpath.compile("/ed:EndpointDescription/ed:Resources/ed:Resource");
-        NodeList l3 = (NodeList) x3.evaluate(doc, XPathConstants.NODESET);
+        exp = xpath.compile("/ed:EndpointDescription/ed:Resources/ed:Resource");
+        list = (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
         final Set<String> ids = new HashSet<String>();
-        List<ResourceInfo> resources =
-                parseRessources(xpath, l3, ids, supportedDataViews);
+        List<ResourceInfo> resources = parseRessources(xpath, list, ids,
+                supportedDataViews, supportedLayers);
         if ((resources == null) || resources.isEmpty()) {
             throw new SRUConfigException("No resources where " +
                     "defined in endpoint description");
@@ -251,15 +318,17 @@ public class SimpleEndpointDescriptionParser {
 
         return new SimpleEndpointDescription(capabilities,
                 supportedDataViews,
+                supportedLayers,
                 resources,
                 false);
     }
 
 
     private static List<ResourceInfo> parseRessources(XPath xpath,
-            NodeList nodes, Set<String> ids, List<DataView> supportedDataViews)
-            throws SRUConfigException, XPathExpressionException {
-      List<ResourceInfo> ris = null;
+            NodeList nodes, Set<String> ids, List<DataView> supportedDataViews,
+            List<Layer> supportedLayers)
+                    throws SRUConfigException, XPathExpressionException {
+        List<ResourceInfo> ris = null;
       for (int k = 0; k < nodes.getLength(); k++) {
           final Element node                = (Element) nodes.item(k);
           String pid                        = null;
@@ -268,6 +337,7 @@ public class SimpleEndpointDescriptionParser {
           String link                       = null;
           List<String> langs                = null;
           List<DataView> availableDataViews = null;
+          List<Layer> availableLayers       = null;
           List<ResourceInfo> sub            = null;
 
           pid = getAttribute(node, "pid");
@@ -434,7 +504,8 @@ public class SimpleEndpointDescriptionParser {
           XPathExpression x6 = xpath.compile("ed:Resources/ed:Resource");
           NodeList l6 = (NodeList) x6.evaluate(node, XPathConstants.NODESET);
           if ((l6 != null) && (l6.getLength() > 0)) {
-              sub = parseRessources(xpath, l6, ids, supportedDataViews);
+              sub = parseRessources(xpath, l6, ids,
+                      supportedDataViews, supportedLayers);
           }
 
           if (ris == null) {
@@ -446,6 +517,7 @@ public class SimpleEndpointDescriptionParser {
                   link,
                   langs,
                   availableDataViews,
+                  availableLayers,
                   sub));
       }
       return ris;

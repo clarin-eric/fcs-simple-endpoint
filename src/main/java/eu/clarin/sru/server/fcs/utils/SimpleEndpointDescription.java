@@ -7,6 +7,7 @@ import java.util.List;
 import eu.clarin.sru.server.SRUException;
 import eu.clarin.sru.server.fcs.DataView;
 import eu.clarin.sru.server.fcs.EndpointDescription;
+import eu.clarin.sru.server.fcs.Layer;
 import eu.clarin.sru.server.fcs.ResourceInfo;
 
 
@@ -31,6 +32,9 @@ public class SimpleEndpointDescription extends AbstractEndpointDescriptionBase {
      *            a list of capabilities supported by this endpoint
      * @param supportedDataViews
      *            a list of data views that are supported by this endpoint
+     * @param supportedLayers
+     *            a list of layers supported for Advanced Search by this
+     *            endpoint or <code>null</code>
      * @param resources
      *            a static list of resource info records
      * @param pidCaseSensitive
@@ -39,9 +43,11 @@ public class SimpleEndpointDescription extends AbstractEndpointDescriptionBase {
      *            otherwise
      */
     public SimpleEndpointDescription(List<URI> capabilities,
-            List<DataView> supportedDataViews, List<ResourceInfo> resources,
+            List<DataView> supportedDataViews,
+            List<Layer> supportedLayers,
+            List<ResourceInfo> resources,
             boolean pidCaseSensitive) {
-        super(capabilities, supportedDataViews);
+        super(capabilities, supportedDataViews, supportedLayers);
 
         if (resources == null) {
             throw new NullPointerException("entries == null");

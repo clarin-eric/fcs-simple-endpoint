@@ -6,6 +6,7 @@ import java.util.List;
 
 import eu.clarin.sru.server.fcs.DataView;
 import eu.clarin.sru.server.fcs.EndpointDescription;
+import eu.clarin.sru.server.fcs.Layer;
 
 
 /**
@@ -18,6 +19,8 @@ import eu.clarin.sru.server.fcs.EndpointDescription;
 public abstract class AbstractEndpointDescriptionBase implements EndpointDescription {
     protected final List<URI> capabilities;
     protected final List<DataView> supportedDataViews;
+    protected final List<Layer> supportedLayers;
+
 
     /**
      * Constructor.
@@ -28,7 +31,7 @@ public abstract class AbstractEndpointDescriptionBase implements EndpointDescrip
      *            a list of data views that are supported by this endpoint
      */
     protected AbstractEndpointDescriptionBase(List<URI> capabilities,
-            List<DataView> supportedDataViews) {
+            List<DataView> supportedDataViews, List<Layer> supportedLayers) {
         if (capabilities == null) {
             throw new NullPointerException("capabilities == null");
         }
@@ -57,6 +60,19 @@ public abstract class AbstractEndpointDescriptionBase implements EndpointDescrip
         }
         this.supportedDataViews =
                 Collections.unmodifiableList(supportedDataViews);
+
+        if ((supportedLayers != null) && !supportedLayers.isEmpty()) {
+            for (Layer layer : supportedLayers) {
+                if (layer == null) {
+                    throw new IllegalArgumentException(
+                            "supportedLayers must not contain a 'null' item");
+                }
+            }
+            this.supportedLayers =
+                    Collections.unmodifiableList(supportedLayers);
+        } else {
+            this.supportedLayers = null;
+        }
     }
 
 
@@ -69,6 +85,12 @@ public abstract class AbstractEndpointDescriptionBase implements EndpointDescrip
     @Override
     public List<DataView> getSupportedDataViews() {
         return supportedDataViews;
+    }
+
+
+    @Override
+    public List<Layer> getSupportedLayers() {
+        return supportedLayers;
     }
 
 } // abstract class EndpointDescriptionBase

@@ -59,6 +59,18 @@ public interface EndpointDescription {
 
 
     /**
+     * Get the list of layers that are supported in Advanced Search by this
+     * endpoint.
+     * <p>
+     * The implementation of this method <em>must</em> be thread-safe.
+     * </p>
+     * 
+     * @return the list of layers supported in Advanced Search by this endpoint
+     */
+    public List<Layer> getSupportedLayers();
+
+
+    /**
      * Get a list of all resources sub-ordinate to a resource identified by a
      * given persistent identifier.
      * <p>

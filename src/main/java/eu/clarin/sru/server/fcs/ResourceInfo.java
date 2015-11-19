@@ -18,6 +18,7 @@ public class ResourceInfo {
     private final String landingPageURI;
     private final List<String> languages;
     private final List<DataView> availableDataViews;
+    private final List<Layer> availableLayers;
     private final List<ResourceInfo> subResources;
 
 
@@ -41,6 +42,9 @@ public class ResourceInfo {
      *            a list of ISO-632-3 three letter language codes
      * @param availableDataViews
      *            the list of available data views for this resource
+     * @param availableLayers
+     *            the list if layers available for Advanced Search or
+     *            <code>null</code> if not applicable
      * @param subResources
      *            a list of resource sub-ordinate to this resource or
      *            <code>null</code> if not applicable
@@ -48,6 +52,7 @@ public class ResourceInfo {
     public ResourceInfo(String pid, Map<String, String> title,
             Map<String, String> description, String landingPageURI,
             List<String> languages, List<DataView> availableDataViews,
+            List<Layer> availableLayers,
             List<ResourceInfo> subResources) {
         if (pid == null) {
             throw new NullPointerException("pid == null");
@@ -81,6 +86,13 @@ public class ResourceInfo {
         }
         this.availableDataViews =
                 Collections.unmodifiableList(availableDataViews);
+
+        if ((availableLayers != null) && !availableDataViews.isEmpty()) {
+            this.availableLayers =
+                    Collections.unmodifiableList(availableLayers);
+        } else {
+            this.availableLayers = null;
+        }
 
         if ((subResources != null) && !subResources.isEmpty()) {
             this.subResources = Collections.unmodifiableList(subResources);
@@ -181,6 +193,38 @@ public class ResourceInfo {
 
 
     /**
+     * Get the list of data views that are available for this resource.
+     *
+     * @return the list of data views
+     */
+    public List<DataView> getAvailableDataViews() {
+        return availableDataViews;
+    }
+
+
+    /**
+     * Get the list of layers that are available in Advanced Search for this
+     * resource.
+     *
+     * @return the list of layers or <code>null</code>
+     */
+    public List<Layer> getAvailableLayers() {
+        return availableLayers;
+    }
+
+
+    /**
+     * Check if any layers are available for Advanced Search
+     *
+     * @return <code>true</code> if any layer for Advanced Search is available,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasAvailableLayers() {
+        return (availableLayers != null);
+    }
+
+
+    /**
      * Get the direct sub-ordinate resources of this resource.
      *
      * @return a list of resources or <code>null</code> if this resource has no
@@ -189,10 +233,5 @@ public class ResourceInfo {
     public List<ResourceInfo> getSubResources() {
         return subResources;
     }
-
-
-	public List<DataView> getAvailableDataViews() {
-		return availableDataViews;
-	}
 
 } // class ResourceInfo
