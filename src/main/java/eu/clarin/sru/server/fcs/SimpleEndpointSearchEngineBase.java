@@ -291,7 +291,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
                             layer.getAltValueInfo());
                     if (layer.getAltValueInfoURI() != null) {
                         writer.writeAttribute("alt-value-info-uri",
-                                layer.getAltValueInfoURI());
+                                layer.getAltValueInfoURI().toString());
                     }
                 }
                 writer.writeCharacters(layer.getType());

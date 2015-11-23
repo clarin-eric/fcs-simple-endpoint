@@ -58,9 +58,13 @@ public class SimpleEndpointDescriptionParser {
             URI.create("http://clarin.eu/fcs/capability/basic-search");
     private static final URI CAP_ADVANCED_SEARCH =
             URI.create("http://clarin.eu/fcs/capability/advanced-search");
+    private static final String MINETYPE_HITS = "application/x-clarin-fcs-hits+xml";
+    private static final String MINETYPE_ADV = "application/x-clarin-fcs-adv+xml";
     private static final String LANG_EN = "en";
     private static final String POLICY_SEND_DEFAULT = "send-by-default";
     private static final String POLICY_NEED_REQUEST = "need-to-request";
+    private static final String LAYER_ENCODING_VALUE = "value";
+    private static final String LAYER_ENCODING_EMPTY = "empty";
     private static final Logger logger =
             LoggerFactory.getLogger(SimpleEndpointDescriptionParser.class);
 
@@ -152,11 +156,12 @@ public class SimpleEndpointDescriptionParser {
                 String s = list.item(i).getTextContent().trim();
                 try {
                     URI uri = new URI(s);
-                    if (capabilities.contains(uri)) {
+                    if (!capabilities.contains(uri)) {
+                        capabilities.add(uri);
+                    } else {
                         logger.warn("ignoring duplicate capability " +
                                 "entry for '{}'", uri);
                     }
-                    capabilities.add(uri);
                 } catch (URISyntaxException e) {
                     throw new SRUConfigException("capability is not encoded " +
                             "as proper URI: " + s);
@@ -174,6 +179,9 @@ public class SimpleEndpointDescriptionParser {
         }
         logger.debug("CAPS:'{}'", capabilities);
 
+        // used to check for id attribute uniqueness
+        final Set<String> xml_ids = new HashSet<String>();
+
         // supported data views
         List<DataView> supportedDataViews = new ArrayList<DataView>();
         exp = xpath.compile("//ed:SupportedDataViews/ed:SupportedDataView");
@@ -187,6 +195,13 @@ public class SimpleEndpointDescriptionParser {
                     throw new SRUConfigException("Element <SupportedDataView> "
                             + "must carry a proper 'id' attribute");
                 }
+
+                if (xml_ids.contains(id)) {
+                    throw new SRUConfigException("The value of attribute " +
+                            "'id' of element <SupportedDataView> must be unique: " + id);
+                }
+                xml_ids.add(id);
+
                 String p = getAttribute(item, "delivery-policy");
                 if (p == null) {
                     throw new SRUConfigException("Element <SupportedDataView> "
@@ -238,6 +253,28 @@ public class SimpleEndpointDescriptionParser {
 
         logger.debug("DV: {}", supportedDataViews);
 
+        // sanity check on data views
+        boolean hasHitsView = false;
+        boolean hasAdvView = false;
+
+        for (DataView dataView : supportedDataViews) {
+            if (dataView.getMimeType().equals(MINETYPE_HITS)) {
+                hasHitsView = true;
+            } else if (dataView.getMimeType().equals(MINETYPE_ADV)) {
+                hasAdvView = true;
+            }
+        }
+        if (!hasHitsView) {
+            throw new SRUConfigException("Generic Hits Data View (" +
+                    MINETYPE_HITS + ") was not declared in <SupportedDataViews>");
+        }
+        if (capabilities.contains(CAP_ADVANCED_SEARCH) && !hasAdvView) {
+            throw new SRUConfigException("Endpoint claimes to support " +
+                    "Advanced FCS but does not declare Advanced Data View (" +
+                    MINETYPE_ADV + ") in <SupportedDataViews>");
+
+        }
+
 
         // supported layers
         List<Layer> supportedLayers = null;
@@ -249,12 +286,19 @@ public class SimpleEndpointDescriptionParser {
                 Element item = (Element) list.item(i);
                 String id = getAttribute(item, "id");
                 if (id == null) {
-                    throw new SRUConfigException("Element <ed:SupportedLayer> "
+                    throw new SRUConfigException("Element <SupportedLayer> "
                             + "must carry a proper 'id' attribute");
                 }
+
+                if (xml_ids.contains(id)) {
+                    throw new SRUConfigException("The value of attribute " +
+                            "'id' of element <SupportedLayer> must be unique: " + id);
+                }
+                xml_ids.add(id);
+
                 String s = getAttribute(item, "result-id");
                 if (s == null) {
-                    throw new SRUConfigException("Element <ed:SupportedLayer> "
+                    throw new SRUConfigException("Element <SupportedLayer> "
                             + "must carry a proper 'result-id' attribute");
                 }
                 URI resultId = null;
@@ -262,28 +306,58 @@ public class SimpleEndpointDescriptionParser {
                     resultId = new URI(s);
                 } catch (URISyntaxException e) {
                     throw new SRUConfigException("Attribute 'result-id' on " +
-                            "Element <ed:SupportedLayer> is not encoded " +
+                            "Element <SupportedLayer> is not encoded " +
                             "as proper URI: " + s);
                 }
 
                 String type = cleanString(item.getTextContent());
                 if ((type != null) && !type.isEmpty()) {
-
+                    // sanity check on layer types
+                    if (!(type.equals("text") ||
+                            type.equals("lemma") ||
+                            type.equals("pos") ||
+                            type.equals("orth") ||
+                            type.equals("norm") ||
+                            type.equals("phonetic") ||
+                            type.startsWith("x-"))) {
+                        logger.warn("layer type '{}' is not defined by specification", type);
+                    }
                 } else {
-                    throw new SRUConfigException("Element <ed:SupportedLayer> "
-                            + "as no proper type");
+                    throw new SRUConfigException("Element <SupportedLayer> " +
+                            "does not define a proper layer type");
                 }
 
                 String qualifier = getAttribute(item, "qualifier");
 
-                // FIXME: implement parsing of content encoding!
                 Layer.ContentEncoding encoding =
                         Layer.ContentEncoding.VALUE;
+                s = getAttribute(item, "type");
+                if (s != null) {
+                    if (LAYER_ENCODING_VALUE.equals(s)) {
+                        encoding = Layer.ContentEncoding.VALUE;
+                    } else if (LAYER_ENCODING_EMPTY.equals(s)) {
+                        encoding = Layer.ContentEncoding.EMPTY;
+                    } else {
+                        throw new SRUConfigException("invalid layer encoding: " + s);
+                    }
+                }
+
 
                 String altValueInfo = getAttribute(item, "alt-value-info");
-                String altValueInfoURI = null;
+                URI altValueInfoURI = null;
                 if (altValueInfo != null) {
-                    altValueInfoURI = getAttribute(item, "alt-value-info-uri");
+                    s = getAttribute(item, "alt-value-info-uri");
+                    if (s != null) {
+                        try {
+                          altValueInfoURI = new URI(s);
+                        } catch (URISyntaxException e) {
+                            throw new SRUConfigException("Attribute 'alt-value-info-uri' on " +
+                                    "Element <SupportedLayer> is not encoded " +
+                                    "as proper URI: " + s);
+                        }
+                    } else {
+
+                    }
                 }
 
 
@@ -308,9 +382,9 @@ public class SimpleEndpointDescriptionParser {
         // resources
         exp = xpath.compile("/ed:EndpointDescription/ed:Resources/ed:Resource");
         list = (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
-        final Set<String> ids = new HashSet<String>();
-        List<ResourceInfo> resources = parseRessources(xpath, list, ids,
-                supportedDataViews, supportedLayers);
+        final Set<String> pids = new HashSet<String>();
+        List<ResourceInfo> resources = parseRessources(xpath, list, pids,
+                supportedDataViews, supportedLayers, hasAdvView);
         if ((resources == null) || resources.isEmpty()) {
             throw new SRUConfigException("No resources where " +
                     "defined in endpoint description");
@@ -325,8 +399,8 @@ public class SimpleEndpointDescriptionParser {
 
 
     private static List<ResourceInfo> parseRessources(XPath xpath,
-            NodeList nodes, Set<String> ids, List<DataView> supportedDataViews,
-            List<Layer> supportedLayers)
+            NodeList nodes, Set<String> pids, List<DataView> supportedDataViews,
+            List<Layer> supportedLayers, boolean hasAdv)
                     throws SRUConfigException, XPathExpressionException {
         List<ResourceInfo> ris = null;
       for (int k = 0; k < nodes.getLength(); k++) {
@@ -345,17 +419,17 @@ public class SimpleEndpointDescriptionParser {
               throw new SRUConfigException("Element <ResourceInfo> " +
                       "must carry a proper 'pid' attribute");
           }
-          if (ids.contains(pid)) {
+          if (pids.contains(pid)) {
               throw new SRUConfigException("Another element <Resource> " +
                       "with pid '" + pid + "' already exists");
           }
-          ids.add(pid);
+          pids.add(pid);
 
-          XPathExpression x1 = xpath.compile("ed:Title");
-          NodeList l1 = (NodeList) x1.evaluate(node, XPathConstants.NODESET);
-          if ((l1 != null) && (l1.getLength() > 0)) {
-              for (int i = 0; i < l1.getLength(); i++) {
-                  final Element n = (Element) l1.item(i);
+          XPathExpression exp = xpath.compile("ed:Title");
+          NodeList list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
+          if ((list != null) && (list.getLength() > 0)) {
+              for (int i = 0; i < list.getLength(); i++) {
+                  final Element n = (Element) list.item(i);
 
                   final String lang = getLangAttribute(n);
                   if (lang == null) {
@@ -386,11 +460,11 @@ public class SimpleEndpointDescriptionParser {
               }
           }
 
-          XPathExpression x2 = xpath.compile("ed:Description");
-          NodeList l2 = (NodeList) x2.evaluate(node, XPathConstants.NODESET);
-          if ((l2 != null) && (l2.getLength() > 0)) {
-              for (int i = 0; i < l2.getLength(); i++) {
-                  Element n = (Element) l2.item(i);
+          exp = xpath.compile("ed:Description");
+          list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
+          if ((list != null) && (list.getLength() > 0)) {
+              for (int i = 0; i < list.getLength(); i++) {
+                  Element n = (Element) list.item(i);
 
                   String lang = getLangAttribute(n);
                   if (lang == null) {
@@ -418,20 +492,20 @@ public class SimpleEndpointDescriptionParser {
               }
           }
 
-          XPathExpression x3 = xpath.compile("ed:LandingPageURI");
-          NodeList l3 = (NodeList) x3.evaluate(node, XPathConstants.NODESET);
-          if ((l3 != null) && (l3.getLength() > 0)) {
-              for (int i = 0; i < l3.getLength(); i++) {
-                  Element n = (Element) l3.item(i);
+          exp = xpath.compile("ed:LandingPageURI");
+          list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
+          if ((list != null) && (list.getLength() > 0)) {
+              for (int i = 0; i < list.getLength(); i++) {
+                  Element n = (Element) list.item(i);
                   link = cleanString(n.getTextContent());
               }
           }
 
-          XPathExpression x4 = xpath.compile("ed:Languages/ed:Language");
-          NodeList l4 = (NodeList) x4.evaluate(node, XPathConstants.NODESET);
-          if ((l4 != null) && (l4.getLength() > 0)) {
-              for (int i = 0; i < l4.getLength(); i++) {
-                  Element n = (Element) l4.item(i);
+          exp = xpath.compile("ed:Languages/ed:Language");
+          list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
+          if ((list != null) && (list.getLength() > 0)) {
+              for (int i = 0; i < list.getLength(); i++) {
+                  Element n = (Element) list.item(i);
 
                   String s = n.getTextContent();
                   if (s != null) {
@@ -457,8 +531,8 @@ public class SimpleEndpointDescriptionParser {
               }
           }
 
-          XPathExpression x5 = xpath.compile("ed:AvailableDataViews");
-          Node n = (Node) x5.evaluate(node, XPathConstants.NODE);
+          exp = xpath.compile("ed:AvailableDataViews");
+          Node n = (Node) exp.evaluate(node, XPathConstants.NODE);
           if ((n != null) && (n instanceof Element)) {
               String ref = getAttribute((Element) n, "ref");
               if (ref == null) {
@@ -494,18 +568,59 @@ public class SimpleEndpointDescriptionParser {
               }
           } else {
               throw new SRUConfigException(
-                      "missing element <ed:AvailableDataViews>");
+                      "missing element <AvailableDataViews>");
           }
           if (availableDataViews == null) {
               throw new SRUConfigException("No available data views where " +
                       "defined for resource with PID '" + pid + "'");
           }
 
-          XPathExpression x6 = xpath.compile("ed:Resources/ed:Resource");
-          NodeList l6 = (NodeList) x6.evaluate(node, XPathConstants.NODESET);
-          if ((l6 != null) && (l6.getLength() > 0)) {
-              sub = parseRessources(xpath, l6, ids,
-                      supportedDataViews, supportedLayers);
+          exp = xpath.compile("ed:AvailableLayers");
+          n = (Node) exp.evaluate(node, XPathConstants.NODE);
+          if ((n != null) && (n instanceof Element)) {
+              String ref = getAttribute((Element) n, "ref");
+              if (ref == null) {
+                  throw new SRUConfigException("Element <AvailableLayers> " +
+                          "must carry a 'ref' attribute");
+              }
+              String[] refs = ref.split("\\s+");
+              if ((refs == null) || (refs.length < 1)) {
+                  throw new SRUConfigException("Attribute 'ref' on element " +
+                          "<AvailableLayers> must contain a whitespace " +
+                          "seperated list of data view references");
+              }
+
+
+              for (int i = 0; i < refs.length; i++) {
+                  Layer layer = null;
+                  for (Layer l : supportedLayers) {
+                      if (refs[i].equals(l.getId())) {
+                          layer = l;
+                          break;
+                      }
+                  }
+                  if (layer != null) {
+                      if (availableLayers == null) {
+                          availableLayers = new ArrayList<Layer>();
+                      }
+                      availableLayers.add(layer);
+                  } else {
+                      throw new SRUConfigException("A layer with " +
+                              "identifier '" + refs[i] + "' was not defined " +
+                              "in <SupportedLayers>");
+                  }
+              }
+          } else {
+              if (hasAdv) {
+                  logger.debug("no <SupportedLayers> for ressource '{}'", pid);
+              }
+          }
+
+          exp = xpath.compile("ed:Resources/ed:Resource");
+          list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
+          if ((list != null) && (list.getLength() > 0)) {
+              sub = parseRessources(xpath, list, pids,
+                      supportedDataViews, supportedLayers, hasAdv);
           }
 
           if (ris == null) {
@@ -525,11 +640,11 @@ public class SimpleEndpointDescriptionParser {
 
 
     private static String getAttribute(Element el, String localName) {
-        String lang = el.getAttribute(localName);
-        if (lang != null) {
-            lang = lang.trim();
-            if (!lang.isEmpty()) {
-                return lang;
+        String value = el.getAttribute(localName);
+        if (value != null) {
+            value = value.trim();
+            if (!value.isEmpty()) {
+                return value;
             }
         }
         return null;

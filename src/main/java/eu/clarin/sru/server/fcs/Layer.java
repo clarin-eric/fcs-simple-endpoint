@@ -26,7 +26,7 @@ public class Layer {
     private final ContentEncoding encoding;
     private final String qualifier;
     private final String altValueInfo;
-    private final String altValueInfoURI;
+    private final URI altValueInfoURI;
 
 
     /**
@@ -50,7 +50,7 @@ public class Layer {
      */
     public Layer(String id, URI resultId, String type,
             ContentEncoding encoding, String qualifier, String altValueInfo,
-            String altValueInfoURI) {
+            URI altValueInfoURI) {
         if (id == null) {
             throw new NullPointerException("id == null");
         }
@@ -160,7 +160,7 @@ public class Layer {
      * @return an additional URI for pointing to more information about the
      *         layer or <code>null</code>
      */
-    public String getAltValueInfoURI() {
+    public URI getAltValueInfoURI() {
         return altValueInfoURI;
     }
 
