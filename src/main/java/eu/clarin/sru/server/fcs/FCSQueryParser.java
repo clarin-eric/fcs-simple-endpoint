@@ -14,6 +14,7 @@ import eu.clarin.sru.fcs.qlparser.FCSParser;
 import eu.clarin.sru.server.SRUConstants;
 import eu.clarin.sru.server.SRUDiagnosticList;
 import eu.clarin.sru.server.SRUQuery;
+import eu.clarin.sru.server.SRUQueryBase;
 import eu.clarin.sru.server.SRUQueryParser;
 import eu.clarin.sru.server.SRUVersion;
 
@@ -27,15 +28,30 @@ public class FCSQueryParser implements SRUQueryParser<ParseTree> {
         return Constants.FCS_QUERY_TYPE;
     }
 
+
+    @Override
+    public boolean supportsVersion(SRUVersion version) {
+        if (version == null) {
+            throw new NullPointerException("version == null");
+        }
+        /*
+         * CQL is supported by all SRU versions ...
+         */
+        return version.compareTo(SRUVersion.VERSION_2_0) >= 0;
+    }
+
+
     @Override
     public String getQueryTypeDefintion() {
         return null;
     }
 
+
     @Override
     public List<String> getQueryParameterNames() {
         return QUERY_PARAMETER_NAMES;
     }
+
 
     @Override
     public SRUQuery<ParseTree> parseQuery(SRUVersion version,
@@ -64,32 +80,17 @@ public class FCSQueryParser implements SRUQueryParser<ParseTree> {
     }
 
 
-    public static final class FCSQuery implements SRUQuery<ParseTree> {
-        private final String rawQuery;
-        private final ParseTree parsedQuery;
+    public static final class FCSQuery extends SRUQueryBase<ParseTree> {
 
 
         private FCSQuery(String rawQuery, ParseTree parsedQuery) {
-            this.rawQuery    = rawQuery;
-            this.parsedQuery = parsedQuery;
+            super(rawQuery, parsedQuery);
         }
 
 
         @Override
         public String getQueryType() {
             return Constants.FCS_QUERY_TYPE;
-        }
-
-
-        @Override
-        public String getRawQuery() {
-            return rawQuery;
-        }
-
-
-        @Override
-        public ParseTree getParsedQuery() {
-            return parsedQuery;
         }
     }
 
