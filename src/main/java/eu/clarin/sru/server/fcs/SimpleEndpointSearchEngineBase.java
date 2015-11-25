@@ -22,6 +22,7 @@ import eu.clarin.sru.server.SRUQueryParserRegistry;
 import eu.clarin.sru.server.SRURequest;
 import eu.clarin.sru.server.SRUScanResultSet;
 import eu.clarin.sru.server.SRUSearchEngine;
+import eu.clarin.sru.server.SRUServer;
 import eu.clarin.sru.server.SRUServerConfig;
 import eu.clarin.sru.server.utils.SRUSearchEngineBase;
 
@@ -54,15 +55,15 @@ public abstract class SimpleEndpointSearchEngineBase extends
     @Override
     public final void init(ServletContext context,
             SRUServerConfig config,
-            SRUQueryParserRegistry queryParsers,
+            SRUQueryParserRegistry.Builder parserReqistryBuilder,
             Map<String, String> params) throws SRUConfigException {
         logger.debug("initializing");
-        super.init(context, config, queryParsers, params);
+        super.init(context, config, parserReqistryBuilder, params);
 
-        queryParsers.registerQueryParser(new FCSQueryParser());
+        parserReqistryBuilder.register(new FCSQueryParser());
 
         logger.debug("initializing search engine implementation");
-        doInit(context, config, queryParsers, params);
+        doInit(context, config, parserReqistryBuilder, params);
 
         logger.debug("initizalizing endpoint description");
         this.endpointDescription =
@@ -150,9 +151,10 @@ public abstract class SimpleEndpointSearchEngineBase extends
      *            the {@link ServletContext} for the Servlet
      * @param config
      *            the {@link SRUServerConfig} object for this search engine
-     * @param queryParsers
-     *            the {@link SRUQueryParserRegistry} object for this search
-     *            engine
+     * @param parsersRegistryBuilder
+     *            the {@link SRUQueryParserRegistry.Builder} object to be used
+     *            for this search engine. Use to register additional query
+     *            parsers with the {@link SRUServer}.
      * @param params
      *            additional parameters gathered from the Servlet configuration
      *            and Servlet context.
@@ -161,7 +163,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
      */
     protected abstract void doInit(ServletContext context,
             SRUServerConfig config,
-            SRUQueryParserRegistry queryParsers,
+            SRUQueryParserRegistry.Builder queryParsersBuilder,
             Map<String, String> params) throws SRUConfigException;
 
 
