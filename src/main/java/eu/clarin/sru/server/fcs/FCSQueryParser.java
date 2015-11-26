@@ -25,7 +25,7 @@ public class FCSQueryParser implements SRUQueryParser<ParseTree> {
 
     @Override
     public String getQueryType() {
-        return Constants.FCS_QUERY_TYPE;
+        return Constants.FCS_QUERY_TYPE_FCS;
     }
 
 
@@ -90,7 +90,7 @@ public class FCSQueryParser implements SRUQueryParser<ParseTree> {
 
         @Override
         public String getQueryType() {
-            return Constants.FCS_QUERY_TYPE;
+            return Constants.FCS_QUERY_TYPE_FCS;
         }
     }
 

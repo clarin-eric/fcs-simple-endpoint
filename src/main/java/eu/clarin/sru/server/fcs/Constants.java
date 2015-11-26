@@ -1,5 +1,7 @@
 package eu.clarin.sru.server.fcs;
 
+import eu.clarin.sru.server.SRUConstants;
+
 /**
  * Various useful constants for CLARIN-FCS endpoints.
  */
@@ -27,8 +29,11 @@ public final class Constants {
             FCS_DIAGNOSTIC_URI_PREFIX + 13;
 
 
-    public static final String FCS_QUERY_TYPE = "fcs";
-
+    public static final String FCS_QUERY_TYPE_FCS          = "fcs";
+    public static final String FCS_QUERY_TYPE_CQL          =
+            SRUConstants.SRU_QUERY_TYPE_CQL;
+    public static final String FCS_QUERY_TYPE_SEARCH_TERMS =
+            SRUConstants.SRU_QUERY_TYPE_SEARCH_TERMS;
 
     /* hide constructor */
     private Constants() {
