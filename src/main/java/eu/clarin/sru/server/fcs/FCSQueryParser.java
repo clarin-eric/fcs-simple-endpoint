@@ -71,7 +71,7 @@ public class FCSQueryParser implements SRUQueryParser<ParseTree> {
             FCSLexer lexer = new FCSLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             FCSParser parser = new FCSParser(tokens);
-            return new FCSQuery(rawQuery, parser.query());
+            return new FCSQuery(rawQuery, parser, parser.query());
         } catch (Exception e) {
             diagnostics.addDiagnostic(SRUConstants.SRU_QUERY_SYNTAX_ERROR,
                     null, "error parsing query");
@@ -81,16 +81,28 @@ public class FCSQueryParser implements SRUQueryParser<ParseTree> {
 
 
     public static final class FCSQuery extends SRUQueryBase<ParseTree> {
+        private final FCSParser parser;
 
-
-        private FCSQuery(String rawQuery, ParseTree parsedQuery) {
+        private FCSQuery(String rawQuery, FCSParser parser, ParseTree parsedQuery) {
             super(rawQuery, parsedQuery);
+            this.parser = parser;
         }
 
 
         @Override
         public String getQueryType() {
             return Constants.FCS_QUERY_TYPE_FCS;
+        }
+
+
+        /**
+         * EXPERIMENTAL API: Get the parser that was used to parse the query.
+         * Useful for outputting the parse tree.
+         *
+         * @return the parser that was used to parse the query.
+         */
+        public FCSParser getFCSParser() {
+            return parser;
         }
     }
 
