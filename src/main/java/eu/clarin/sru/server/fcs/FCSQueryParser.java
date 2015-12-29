@@ -1,30 +1,26 @@
 package eu.clarin.sru.server.fcs;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.BaseErrorListener;
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
-import org.antlr.v4.runtime.tree.ParseTree;
-import eu.clarin.sru.fcs.qlparser.FCSLexer;
-import eu.clarin.sru.fcs.qlparser.FCSParser;
 import eu.clarin.sru.server.SRUConstants;
 import eu.clarin.sru.server.SRUDiagnosticList;
 import eu.clarin.sru.server.SRUQuery;
 import eu.clarin.sru.server.SRUQueryBase;
 import eu.clarin.sru.server.SRUQueryParser;
 import eu.clarin.sru.server.SRUVersion;
+import eu.clarin.sru.server.fcs.parser.QueryNode;
+import eu.clarin.sru.server.fcs.parser.QueryParser;
+import eu.clarin.sru.server.fcs.parser.QueryParserException;
 
-public class FCSQueryParser implements SRUQueryParser<ParseTree> {
+public class FCSQueryParser implements SRUQueryParser<QueryNode> {
     private static final String PARAM_QUERY = "query";
     private static final List<String> QUERY_PARAMETER_NAMES =
             Collections.unmodifiableList(Arrays.asList(PARAM_QUERY));
+    private final QueryParser parser = new QueryParser();
+
 
     @Override
     public String getQueryType() {
@@ -57,7 +53,7 @@ public class FCSQueryParser implements SRUQueryParser<ParseTree> {
 
 
     @Override
-    public SRUQuery<ParseTree> parseQuery(SRUVersion version,
+    public SRUQuery<QueryNode> parseQuery(SRUVersion version,
             Map<String, String> parameters, SRUDiagnosticList diagnostics) {
         FCSQuery result = null;
 
@@ -68,46 +64,12 @@ public class FCSQueryParser implements SRUQueryParser<ParseTree> {
             return null;
         }
 
-        ParseErrorListener errorListener = new ParseErrorListener();
         try {
-            ANTLRInputStream input = new ANTLRInputStream(rawQuery);
-            FCSLexer lexer = new FCSLexer(input);
-            CommonTokenStream tokens = new CommonTokenStream(lexer);
-            FCSParser parser = new FCSParser(tokens);
-            /*
-             * clear (possible) default error listeners and set our own!
-             */
-            lexer.removeErrorListeners();
-            lexer.addErrorListener(errorListener);
-            parser.removeErrorListeners();
-            parser.addErrorListener(errorListener);
-
-            /*
-             * other Lexer/Parser configuration ...
-             */
-            parser.setTrimParseTree(true);
-
-            /*
-             * commence parsing ...
-             */
-            ParseTree tree = parser.query();
-
-            if (!errorListener.hasErrors() &&
-                    (parser.getNumberOfSyntaxErrors() == 0)) {
-                result = new FCSQuery(rawQuery, parser, tree);
-            } else {
-                if (errorListener.hasErrors()) {
-                    for (String error : errorListener.getErrors()) {
-                        diagnostics.addDiagnostic(
-                                Constants.FCS_DIAGNOSTIC_GENERAL_QUERY_SYNTAX_ERROR,
-                                null, error);
-                    }
-                } else {
-                    diagnostics.addDiagnostic(
-                            Constants.FCS_DIAGNOSTIC_GENERAL_QUERY_SYNTAX_ERROR,
-                            null, "Query could not be parsed.");
-                }
-            }
+            QueryNode parsedQuery = parser.parse(rawQuery);
+            result = new FCSQuery(rawQuery, parsedQuery);
+        } catch (QueryParserException e) {
+            diagnostics.addDiagnostic(Constants.FCS_DIAGNOSTIC_GENERAL_QUERY_SYNTAX_ERROR,
+                    null, e.getMessage());
         } catch (Exception e) {
             diagnostics.addDiagnostic(SRUConstants.SRU_GENERAL_SYSTEM_ERROR,
                     null, "Unexpected error while parsing query.");
@@ -116,57 +78,16 @@ public class FCSQueryParser implements SRUQueryParser<ParseTree> {
     }
 
 
-    public static final class FCSQuery extends SRUQueryBase<ParseTree> {
-        private final FCSParser parser;
+    public static final class FCSQuery extends SRUQueryBase<QueryNode> {
 
-        private FCSQuery(String rawQuery,
-                FCSParser parser,
-                ParseTree parsedQuery) {
+        private FCSQuery(String rawQuery, QueryNode parsedQuery) {
             super(rawQuery, parsedQuery);
-            this.parser = parser;
         }
 
 
         @Override
         public String getQueryType() {
             return Constants.FCS_QUERY_TYPE_FCS;
-        }
-
-
-        /**
-         * EXPERIMENTAL API: Get the parser that was used to parse the query.
-         * Useful for outputting the parse tree.
-         *
-         * @return the parser that was used to parse the query.
-         */
-        public FCSParser getFCSParser() {
-            return parser;
-        }
-    }
-
-
-    private static final class ParseErrorListener extends BaseErrorListener {
-        private List<String> errors = null;
-
-
-        @Override
-        public void syntaxError(Recognizer<?, ?> recognizer,
-                Object offendingSymbol, int line, int charPositionInLine,
-                String msg, RecognitionException e) {
-            if (errors == null) {
-                errors = new ArrayList<String>();
-            }
-            errors.add(msg);
-        }
-
-
-        public boolean hasErrors() {
-            return (errors != null) && !errors.isEmpty();
-        }
-
-
-        public List<String> getErrors() {
-            return errors;
         }
     }
 
