@@ -1,3 +1,19 @@
+/**
+ * This software is copyright (c) 2013-2016 by
+ *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * This is free software. You can redistribute it
+ * and/or modify it under the terms described in
+ * the GNU General Public License v3 of which you
+ * should have received a copy. Otherwise you can download
+ * it from
+ *
+ *   http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * @copyright Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ *  GNU General Public License v3
+ */
 package eu.clarin.sru.server.fcs;
 
 import java.net.URI;
@@ -10,10 +26,13 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 
+/**
+ * Helper class for serializing Advanced data views. It can be used for writing
+ * more than one, but it is <em>not thread-save</em>.
+ */
 public class AdvancedDataViewWriter {
     public enum Unit {
-        ITEM,
-        TIMESTAMP
+        ITEM, TIMESTAMP
     }
     private static final long INITIAL_SEGMENT_ID = 1;
     public static final int NO_HIGHLIGHT = -1;
@@ -26,6 +45,13 @@ public class AdvancedDataViewWriter {
     private long nextSegmentId = INITIAL_SEGMENT_ID;
 
 
+    /**
+     * Constructor.
+     *
+     * @param unit
+     *            the unit to be used for span offsets
+     * @see Unit
+     */
     public AdvancedDataViewWriter(Unit unit) {
         if (unit == null) {
             throw new NullPointerException("unit == null");
@@ -34,63 +60,94 @@ public class AdvancedDataViewWriter {
     }
 
 
+    /**
+     * Reset the writer for writing a new data view (instance).
+     */
     public void reset() {
         nextSegmentId = INITIAL_SEGMENT_ID;
     }
 
 
-    private static final class Segment {
-        private final String id;
-        private final long start;
-        private final long end;
-        private final URI ref;
-
-        private Segment(long id, long start, long end) {
-            this.id = "s" + Long.toHexString(id);
-            this.start = start;
-            this.end = end;
-            this.ref = null;
-        }
-    }
-
-    private static final class Span {
-        private final Segment segment;
-        private final String value;
-        private final String altValue;
-        private final String highlight;
-
-
-        private Span(Segment segment, String value, String altValue,
-                int highlight) {
-            this.segment = segment;
-            this.value = value;
-            this.altValue = altValue;
-            if (highlight != NO_HIGHLIGHT) {
-                this.highlight = "h" + Integer.toHexString(highlight);
-            } else {
-                this.highlight = null;
-            }
-        }
-    }
-
-
+    /**
+     * Add a span.
+     *
+     * @param layerId
+     *            the span's layer id
+     * @param start
+     *            the span's start offset
+     * @param end
+     *            the span's end offset
+     * @param value
+     *            the span's content value or <code>null</code> if none
+     * @throws IllegalArgumentException
+     *             if any argument is invalid
+     */
     public void addSpan(URI layerId, long start, long end, String value) {
         addSpan(layerId, start, end, value, null, NO_HIGHLIGHT);
     }
 
 
+    /**
+     * Add a span.
+     *
+     * @param layerId
+     *            the span's layer id
+     * @param start
+     *            the span's start offset
+     * @param end
+     *            the span's end offset
+     * @param value
+     *            the span's content value or <code>null</code> if none
+     * @param highlight
+     *            the highlight group
+     * @throws IllegalArgumentException
+     *             if any argument is invalid
+     */
     public void addSpan(URI layerId, long start, long end, String value,
             int highlight) {
         addSpan(layerId, start, end, value, null, highlight);
     }
 
 
+    /**
+     * Add a span.
+     *
+     * @param layerId
+     *            the span's layer id
+     * @param start
+     *            the span's start offset
+     * @param end
+     *            the span's end offset
+     * @param value
+     *            the span's content value or <code>null</code> if none
+     * @param altValue
+     *            the span's alternate value or <code>null</code> if none
+     */
     public void addSpan(URI layerId, long start, long end, String value,
             String altValue) {
         addSpan(layerId, start, end, value, altValue, NO_HIGHLIGHT);
     }
 
 
+    /**
+     * Add a span.
+     *
+     * @param layerId
+     *            the span's layer id
+     * @param start
+     *            the span's start offset
+     * @param end
+     *            the span's end offset
+     * @param value
+     *            the span's content value or <code>null</code> if none
+     * @param altValue
+     * @param highlight
+     *            the span's alternate value or <code>null</code> if none
+     * @param highlight
+     *            the highlight group
+     * @throws IllegalArgumentException
+     *             if any argument is invalid
+     */
     public void addSpan(URI layerId, long start, long end, String value,
             String altValue, int highlight) {
         if (layerId == null) {
@@ -130,13 +187,22 @@ public class AdvancedDataViewWriter {
         for (Span span : layer) {
             if (segment.equals(span.segment)) {
                 // FIXME: better exception!
-                throw new IllegalArgumentException("segment already exists in layer");
+                throw new IllegalArgumentException(
+                        "segment already exists in layer");
             }
         }
         layer.add(new Span(segment, value, altValue, highlight));
     }
 
 
+    /**
+     * Write the Advanced data view to the output stream.
+     *
+     * @param writer
+     *            the writer to write to
+     * @throws XMLStreamException
+     *             if an error occurs
+     */
     public void writeAdvancedDataView(XMLStreamWriter writer)
             throws XMLStreamException {
         if (writer == null) {
@@ -201,6 +267,41 @@ public class AdvancedDataViewWriter {
 
         writer.writeEndElement(); // "Advanced" element
         XMLStreamWriterHelper.writeEndDataView(writer);
+    }
+
+    private static final class Segment {
+        private final String id;
+        private final long start;
+        private final long end;
+        private final URI ref;
+
+
+        private Segment(long id, long start, long end) {
+            this.id = "s" + Long.toHexString(id);
+            this.start = start;
+            this.end = end;
+            this.ref = null;
+        }
+    }
+
+    private static final class Span {
+        private final Segment segment;
+        private final String value;
+        private final String altValue;
+        private final String highlight;
+
+
+        private Span(Segment segment, String value, String altValue,
+                int highlight) {
+            this.segment = segment;
+            this.value = value;
+            this.altValue = altValue;
+            if (highlight != NO_HIGHLIGHT) {
+                this.highlight = "h" + Integer.toHexString(highlight);
+            } else {
+                this.highlight = null;
+            }
+        }
     }
 
 } // class AdvancedDataViewHelper

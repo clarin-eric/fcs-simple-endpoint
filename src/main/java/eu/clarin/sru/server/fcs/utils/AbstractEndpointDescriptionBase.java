@@ -1,3 +1,19 @@
+/**
+ * This software is copyright (c) 2013-2016 by
+ *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * This is free software. You can redistribute it
+ * and/or modify it under the terms described in
+ * the GNU General Public License v3 of which you
+ * should have received a copy. Otherwise you can download
+ * it from
+ *
+ *   http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * @copyright Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ *  GNU General Public License v3
+ */
 package eu.clarin.sru.server.fcs.utils;
 
 import java.net.URI;
@@ -11,7 +27,7 @@ import eu.clarin.sru.server.fcs.Layer;
 
 /**
  * An abstract base class for implementing endpoint descriptions. It already
- * implements the methods required for capabilities and supported dataviews.
+ * implements the methods required for capabilities and supported data views.
  *
  * @see EndpointDescription
  *

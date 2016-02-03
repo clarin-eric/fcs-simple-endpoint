@@ -1,10 +1,40 @@
+/**
+ * This software is copyright (c) 2013-2016 by
+ *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * This is free software. You can redistribute it
+ * and/or modify it under the terms described in
+ * the GNU General Public License v3 of which you
+ * should have received a copy. Otherwise you can download
+ * it from
+ *
+ *   http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * @copyright Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ *  GNU General Public License v3
+ */
 package eu.clarin.sru.server.fcs.parser;
 
+
+/**
+ * A FCS-QL expression tree GROUP query node.
+ */
 public class QueryGroup extends QueryNode {
-    private int minOccurs;
-    private int maxOccurs;
+    private final int minOccurs;
+    private final int maxOccurs;
 
 
+    /**
+     * Constructor.
+     *
+     * @param content
+     *            the child
+     * @param minOccurs
+     *            the minimum occurrence
+     * @param maxOccurs
+     *            the maximum occurrence
+     */
     QueryGroup(QueryNode content, int minOccurs, int maxOccurs) {
         super(QueryNodeType.QUERY_GROUP, content);
         this.minOccurs = minOccurs;
@@ -12,16 +42,33 @@ public class QueryGroup extends QueryNode {
     }
 
 
+    /**
+     * Get the group content.
+     *
+     * @return the content of the GROUP query
+     */
     public QueryNode getContent() {
         return children.get(0);
     }
 
 
+    /**
+     * Get the minimum occurrence of group content.
+     *
+     * @return the minimum occurrence
+     *
+     */
     public int getMinOccurs() {
         return minOccurs;
     }
 
 
+    /**
+     * Get the maximum occurrence of group content.
+     *
+     * @return the maximum occurrence
+     *
+     */
     public int getMaxOccurs() {
         return maxOccurs;
     }
@@ -68,4 +115,4 @@ public class QueryGroup extends QueryNode {
         visitor.visit(this);
     }
 
-}
+} // class QueryGroup

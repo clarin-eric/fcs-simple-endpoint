@@ -1,3 +1,19 @@
+/**
+ * This software is copyright (c) 2013-2016 by
+ *  - Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * This is free software. You can redistribute it
+ * and/or modify it under the terms described in
+ * the GNU General Public License v3 of which you
+ * should have received a copy. Otherwise you can download
+ * it from
+ *
+ *   http://www.gnu.org/licenses/gpl-3.0.txt
+ *
+ * @copyright Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *
+ * @license http://www.gnu.org/licenses/gpl-3.0.txt
+ *  GNU General Public License v3
+ */
 package eu.clarin.sru.server.fcs.parser;
 
 import java.util.ArrayDeque;
@@ -46,6 +62,9 @@ import eu.clarin.sru.fcs.qlparser.FCSParser.Within_partContext;
 import eu.clarin.sru.fcs.qlparser.FCSParser.Within_part_simpleContext;
 
 
+/**
+ * A FCS-QL query parser that produces FCS-QL expression trees.
+ */
 public class QueryParser {
     private static final int[] REP_ZERO_OR_MORE =
             new int[] { 0, Constants.OCCURS_UNBOUNDED };
@@ -63,17 +82,35 @@ public class QueryParser {
     private final Operator defaultOperator;
 
 
+    /**
+     * Constructor.
+     */
     public QueryParser() {
         this(DEFAULT_IDENTIFIER);
     }
 
 
+    /**
+     * Constructor.
+     *
+     * @param defaultIdentifier
+     *            the default identifer to be used for simple expressions
+     */
     public QueryParser(String defaultIdentifier) {
         this.defaultIdentifier = defaultIdentifier;
         this.defaultOperator = DEFAULT_OPERATOR;
     }
 
 
+    /**
+     * Parse query.
+     *
+     * @param query
+     *            the FCS-QL query
+     * @return a FCS-QL expression tree
+     * @throws QueryParserException
+     *             if an error occurred
+     */
     public QueryNode parse(String query) throws QueryParserException {
         final ErrorListener errorListener = new ErrorListener(query);
         try {
