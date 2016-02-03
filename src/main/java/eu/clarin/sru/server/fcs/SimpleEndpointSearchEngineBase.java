@@ -63,10 +63,12 @@ public abstract class SimpleEndpointSearchEngineBase extends
 
     /**
      * This method should not be overridden. Perform your custom initialization
-     * in the {@link #doInit(ServletContext, SRUServerConfig, Map)} method
-     * Instead.
+     * in the
+     * {@link #doInit(ServletContext, SRUServerConfig, eu.clarin.sru.server.SRUQueryParserRegistry.Builder, Map)}
+     * method instead.
      *
-     * @see #doInit(ServletContext, SRUServerConfig, Map)
+     * @see #doInit(ServletContext, SRUServerConfig,
+     *      eu.clarin.sru.server.SRUQueryParserRegistry.Builder, Map)
      */
     @Override
     public final void init(ServletContext context,
@@ -167,7 +169,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
      *            the {@link ServletContext} for the Servlet
      * @param config
      *            the {@link SRUServerConfig} object for this search engine
-     * @param parsersRegistryBuilder
+     * @param queryParsersBuilder
      *            the {@link SRUQueryParserRegistry.Builder} object to be used
      *            for this search engine. Use to register additional query
      *            parsers with the {@link SRUServer}.

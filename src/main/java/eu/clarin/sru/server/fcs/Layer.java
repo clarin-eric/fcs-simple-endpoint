@@ -55,6 +55,8 @@ public class Layer {
      *            this layer
      * @param type
      *            the type identifier for the layer
+     * @param encoding
+     *            the content encoding for this layer
      * @param qualifier
      *            an optional layer qualifier to be used in FCS-QL to refer to
      *            this layer or <code>null</code>

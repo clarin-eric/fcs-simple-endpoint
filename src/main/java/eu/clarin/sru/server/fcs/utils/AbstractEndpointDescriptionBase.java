@@ -45,6 +45,8 @@ public abstract class AbstractEndpointDescriptionBase implements EndpointDescrip
      *            a list of capabilities supported by this endpoint
      * @param supportedDataViews
      *            a list of data views that are supported by this endpoint
+     * @param supportedLayers
+     *            a list of layers that are supported by this endpoint
      */
     protected AbstractEndpointDescriptionBase(List<URI> capabilities,
             List<DataView> supportedDataViews, List<Layer> supportedLayers) {

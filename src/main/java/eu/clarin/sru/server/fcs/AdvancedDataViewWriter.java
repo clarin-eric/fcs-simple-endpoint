@@ -141,6 +141,7 @@ public class AdvancedDataViewWriter {
      * @param value
      *            the span's content value or <code>null</code> if none
      * @param altValue
+     *            the span's alternate value or <code>null</code> if none
      * @param highlight
      *            the span's alternate value or <code>null</code> if none
      * @param highlight

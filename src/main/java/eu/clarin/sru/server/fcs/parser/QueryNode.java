@@ -166,6 +166,8 @@ public abstract class QueryNode {
      * Get a child node of specified type by index. Only child nodes of the
      * requested type are counted.
      *
+     * @param <T>
+     *            the class of the nodes to be considered
      * @param clazz
      *            the type to nodes to be considered
      * @param idx
@@ -193,6 +195,10 @@ public abstract class QueryNode {
     /**
      * Get a first child node of specified type.
      *
+     * @param <T>
+     *            the class of the nodes to be considered
+     * @param clazz
+     *            the type to nodes to be considered
      * @return the child node of this node or <code>null</code> if no child was
      *         found
      */
