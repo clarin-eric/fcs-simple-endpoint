@@ -27,8 +27,9 @@ import javax.xml.stream.XMLStreamWriter;
 
 
 /**
- * Helper class for serializing Advanced data views. It can be used for writing
- * more than one, but it is <em>not thread-save</em>.
+ * Helper class for serializing Advanced Data Views. It can be used for writing
+ * more than one, but it is <em>not thread-save</em>. This helper can also
+ * serialize HITS Data Views.
  */
 public class AdvancedDataViewWriter {
     public enum Unit {
@@ -37,8 +38,15 @@ public class AdvancedDataViewWriter {
     private static final long INITIAL_SEGMENT_ID = 1;
     public static final int NO_HIGHLIGHT = -1;
     private static final String ADV_PREFIX = "adv";
-    private static final String ADV_NS = "http://clarin.eu/fcs/dataview/advanced";
-    private static final String ADV_MIME_TYPE = "application/x-clarin-fcs-adv+xml";
+    private static final String ADV_NS =
+            "http://clarin.eu/fcs/dataview/advanced";
+    private static final String ADV_MIME_TYPE =
+            "application/x-clarin-fcs-adv+xml";
+    private static final String HITS_MIME_TYPE =
+            "application/x-clarin-fcs-hits+xml";
+    private static final String FCS_HITS_PREFIX = "hits";
+    private static final String FCS_HITS_NS =
+            "http://clarin.eu/fcs/dataview/hits";
     private final Unit unit;
     private final List<Segment> segments = new ArrayList<Segment>();
     private final Map<URI, List<Span>> layers = new HashMap<URI, List<Span>>();
@@ -197,12 +205,12 @@ public class AdvancedDataViewWriter {
 
 
     /**
-     * Write the Advanced data view to the output stream.
+     * Write the Advanced Data View to the output stream.
      *
      * @param writer
      *            the writer to write to
      * @throws XMLStreamException
-     *             if an error occurs
+     *             if an error occurred
      */
     public void writeAdvancedDataView(XMLStreamWriter writer)
             throws XMLStreamException {
@@ -270,6 +278,62 @@ public class AdvancedDataViewWriter {
         XMLStreamWriterHelper.writeEndDataView(writer);
     }
 
+
+    /**
+     * Convenience method to write HITS Data View.
+     *
+     * @param writer
+     *            the writer to write to
+     * @param layerId
+     *            the layer id of the layer to be serialized as HITS Data View
+     * @throws XMLStreamException
+     *             if an error occurred
+     * @throws IllegalArgumentException
+     *             if an invalid layer id was provided
+     */
+    public void writeHitsDataView(XMLStreamWriter writer, URI layerId)
+            throws XMLStreamException {
+        if (writer == null) {
+            throw new NullPointerException("writer == null");
+        }
+        if (layerId == null) {
+            throw new NullPointerException("layerId == null");
+        }
+
+        final List<Span> spans = layers.get(layerId);
+        if (spans == null) {
+            throw new IllegalArgumentException(
+                    "layer with id'" + layerId + "' does not exist");
+        }
+        XMLStreamWriterHelper.writeStartDataView(writer, HITS_MIME_TYPE);
+        writer.setPrefix(FCS_HITS_PREFIX, FCS_HITS_NS);
+        writer.writeStartElement(FCS_HITS_NS, "Result");
+        writer.writeNamespace(FCS_HITS_PREFIX, FCS_HITS_NS);
+        boolean needSpace = false;
+        for (Span span : spans) {
+            if (span.value.length() > 0) {
+                if (needSpace) {
+                    writer.writeCharacters(" ");
+                    needSpace = false;
+                }
+                if (span.highlight != null) {
+                    writer.writeStartElement(FCS_HITS_NS, "Hit");
+                    writer.writeCharacters(span.value);
+                    writer.writeEndElement(); // "Hit" element
+                    needSpace = true;
+                } else {
+                    writer.writeCharacters(span.value);
+                    if (!Character.isWhitespace(
+                            (span.value.charAt(span.value.length() - 1)))) {
+                        needSpace = true;
+                    }
+                }
+            }
+        }
+        writer.writeEndElement(); // "Result" element
+        XMLStreamWriterHelper.writeEndDataView(writer);
+    }
+
     private static final class Segment {
         private final String id;
         private final long start;
@@ -281,6 +345,9 @@ public class AdvancedDataViewWriter {
             this.id = "s" + Long.toHexString(id);
             this.start = start;
             this.end = end;
+            /*
+             * FIXME: add API to set reference
+             */
             this.ref = null;
         }
     }
@@ -305,4 +372,4 @@ public class AdvancedDataViewWriter {
         }
     }
 
-} // class AdvancedDataViewHelper
+} // class AdvancedDataViewWriter
