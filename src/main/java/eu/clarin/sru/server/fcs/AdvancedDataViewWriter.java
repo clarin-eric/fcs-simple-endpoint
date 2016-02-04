@@ -28,7 +28,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 /**
  * Helper class for serializing Advanced Data Views. It can be used for writing
- * more than one, but it is <em>not thread-save</em>. This helper can also
+ * more than once, but it is <em>not thread-save</em>. This helper can also
  * serialize HITS Data Views.
  */
 public class AdvancedDataViewWriter {
