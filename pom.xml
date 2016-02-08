@@ -1,9 +1,11 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>eu.clarin.sru.fcs</groupId>
     <artifactId>fcs-simple-endpoint</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.3.0</version>
     <packaging>jar</packaging>
     <name>A simple CLARIN FCS endpoint</name>
     <description>
@@ -17,7 +19,7 @@
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <!-- versions of common dependencies -->
-        <slf4j.version>1.7.2</slf4j.version>
+        <slf4j.version>1.7.12</slf4j.version>
     </properties>
 
     <dependencies>
@@ -37,8 +39,31 @@
         <dependency>
             <groupId>eu.clarin.sru</groupId>
             <artifactId>sru-server</artifactId>
-            <version>1.5.0</version>
+            <version>1.8.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>eu.clarin.sru.fcs</groupId>
+            <artifactId>fcs-ql</artifactId>
+            <version>0.1</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.codehaus.woodstox</groupId>
+            <artifactId>woodstox-core-lgpl</artifactId>
+            <version>4.4.1</version>
+			<exclusions>
+				<!-- StAX comes with Java 1.6 -->
+				<exclusion>
+					<artifactId>stax-api</artifactId>
+					<groupId>javax.xml.stream</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>stax-api</artifactId>
+					<groupId>stax</groupId>
+				</exclusion>
+			</exclusions>
+        </dependency> 
     </dependencies>
 
     <dependencyManagement>
@@ -96,10 +121,33 @@
 
     <repositories>
         <repository>
-            <id>clarin</id>
-            <url>http://catalog.clarin.eu/ds/nexus/content/repositories/Clarin/</url>
-            <layout>default</layout>
+            <id>CLARIN</id>
+            <name>CLARIN Repository</name>
+            <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+
+        <repository>
+            <id>CLARIN-snapshot</id>
+            <name>CLARIN Snapshot Repository</name>
+            <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>CLARIN-snapshot</id>
+            <url>https://nexus.clarin.eu/content/repositories/clarin-snapshot</url>
+        </snapshotRepository>
+
+        <repository>
+            <id>CLARIN</id>
+            <url>https://nexus.clarin.eu/content/repositories/Clarin</url>
+        </repository>
+    </distributionManagement>
 </project>
