@@ -74,8 +74,8 @@ public class SimpleEndpointDescriptionParser {
             URI.create("http://clarin.eu/fcs/capability/basic-search");
     private static final URI CAP_ADVANCED_SEARCH =
             URI.create("http://clarin.eu/fcs/capability/advanced-search");
-    private static final String MINETYPE_HITS = "application/x-clarin-fcs-hits+xml";
-    private static final String MINETYPE_ADV = "application/x-clarin-fcs-adv+xml";
+    private static final String MIMETYPE_HITS = "application/x-clarin-fcs-hits+xml";
+    private static final String MIMETYPE_ADV = "application/x-clarin-fcs-adv+xml";
     private static final String LANG_EN = "en";
     private static final String POLICY_SEND_DEFAULT = "send-by-default";
     private static final String POLICY_NEED_REQUEST = "need-to-request";
@@ -180,7 +180,7 @@ public class SimpleEndpointDescriptionParser {
                     }
                 } catch (URISyntaxException e) {
                     throw new SRUConfigException("capability is not encoded " +
-                            "as proper URI: " + s);
+                            "as a proper URI: " + s);
                 }
             }
         } else {
@@ -189,7 +189,7 @@ public class SimpleEndpointDescriptionParser {
         }
         if (!capabilities.contains(CAP_BASIC_SEARCH)) {
             logger.warn("capability '{}' was not defined in endpoint " +
-                    "description; added it to meet specification. Please " +
+                    "description; it was added to meet the specification. Please " +
                     "update your endpoint description!", CAP_BASIC_SEARCH);
             capabilities.add(CAP_BASIC_SEARCH);
         }
@@ -209,7 +209,7 @@ public class SimpleEndpointDescriptionParser {
                 String id = getAttribute(item, "id");
                 if (id == null) {
                     throw new SRUConfigException("Element <SupportedDataView> "
-                            + "must carry a proper 'id' attribute");
+                            + "must have a proper 'id' attribute");
                 }
 
                 if (xml_ids.contains(id)) {
@@ -221,7 +221,7 @@ public class SimpleEndpointDescriptionParser {
                 String p = getAttribute(item, "delivery-policy");
                 if (p == null) {
                     throw new SRUConfigException("Element <SupportedDataView> "
-                            + "must carry a 'delivery-policy' attribute");
+                            + "must have a 'delivery-policy' attribute");
                 }
                 DeliveryPolicy policy = null;
                 if (POLICY_SEND_DEFAULT.equals(p)) {
@@ -274,20 +274,20 @@ public class SimpleEndpointDescriptionParser {
         boolean hasAdvView = false;
 
         for (DataView dataView : supportedDataViews) {
-            if (dataView.getMimeType().equals(MINETYPE_HITS)) {
+            if (dataView.getMimeType().equals(MIMETYPE_HITS)) {
                 hasHitsView = true;
-            } else if (dataView.getMimeType().equals(MINETYPE_ADV)) {
+            } else if (dataView.getMimeType().equals(MIMETYPE_ADV)) {
                 hasAdvView = true;
             }
         }
         if (!hasHitsView) {
             throw new SRUConfigException("Generic Hits Data View (" +
-                    MINETYPE_HITS + ") was not declared in <SupportedDataViews>");
+                    MIMETYPE_HITS + ") was not declared in <SupportedDataViews>");
         }
         if (capabilities.contains(CAP_ADVANCED_SEARCH) && !hasAdvView) {
             throw new SRUConfigException("Endpoint claimes to support " +
                     "Advanced FCS but does not declare Advanced Data View (" +
-                    MINETYPE_ADV + ") in <SupportedDataViews>");
+                    MIMETYPE_ADV + ") in <SupportedDataViews>");
 
         }
 
@@ -303,7 +303,7 @@ public class SimpleEndpointDescriptionParser {
                 String id = getAttribute(item, "id");
                 if (id == null) {
                     throw new SRUConfigException("Element <SupportedLayer> "
-                            + "must carry a proper 'id' attribute");
+                            + "must have a proper 'id' attribute");
                 }
 
                 if (xml_ids.contains(id)) {
@@ -315,7 +315,7 @@ public class SimpleEndpointDescriptionParser {
                 String s = getAttribute(item, "result-id");
                 if (s == null) {
                     throw new SRUConfigException("Element <SupportedLayer> "
-                            + "must carry a proper 'result-id' attribute");
+                            + "must have a proper 'result-id' attribute");
                 }
                 URI resultId = null;
                 try {
@@ -399,7 +399,7 @@ public class SimpleEndpointDescriptionParser {
         exp = xpath.compile("/ed:EndpointDescription/ed:Resources/ed:Resource");
         list = (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
         final Set<String> pids = new HashSet<String>();
-        List<ResourceInfo> resources = parseRessources(xpath, list, pids,
+        List<ResourceInfo> resources = parseResources(xpath, list, pids,
                 supportedDataViews, supportedLayers, hasAdvView);
         if ((resources == null) || resources.isEmpty()) {
             throw new SRUConfigException("No resources where " +
@@ -414,7 +414,7 @@ public class SimpleEndpointDescriptionParser {
     }
 
 
-    private static List<ResourceInfo> parseRessources(XPath xpath,
+    private static List<ResourceInfo> parseResources(XPath xpath,
             NodeList nodes, Set<String> pids, List<DataView> supportedDataViews,
             List<Layer> supportedLayers, boolean hasAdv)
                     throws SRUConfigException, XPathExpressionException {
@@ -433,7 +433,7 @@ public class SimpleEndpointDescriptionParser {
           pid = getAttribute(node, "pid");
           if (pid == null) {
               throw new SRUConfigException("Element <ResourceInfo> " +
-                      "must carry a proper 'pid' attribute");
+                      "must have a proper 'pid' attribute");
           }
           if (pids.contains(pid)) {
               throw new SRUConfigException("Another element <Resource> " +
@@ -449,14 +449,14 @@ public class SimpleEndpointDescriptionParser {
 
                   final String lang = getLangAttribute(n);
                   if (lang == null) {
-                      throw new SRUConfigException("Element <Title> must " +
-                              "carry a proper 'xml:lang' attribute");
+                      throw new SRUConfigException("Element <Title> " +
+                              "must have a proper 'xml:lang' attribute");
                   }
 
                   final String title = cleanString(n.getTextContent());
                   if (title == null) {
-                      throw new SRUConfigException("Element <Title> must " +
-                              "carry a non-empty 'xml:lang' attribute");
+                      throw new SRUConfigException("Element <Title> " +
+                              "must have a non-empty 'xml:lang' attribute");
                   }
 
                   if (titles == null) {
@@ -485,7 +485,7 @@ public class SimpleEndpointDescriptionParser {
                   String lang = getLangAttribute(n);
                   if (lang == null) {
                       throw new SRUConfigException("Element <Description> " +
-                              "must carry a proper 'xml:lang' attribute");
+                              "must have a proper 'xml:lang' attribute");
 
                   }
                   String desc = cleanString(n.getTextContent());
@@ -536,7 +536,7 @@ public class SimpleEndpointDescriptionParser {
                    */
                   if ((s == null) || (s.length() != 3)) {
                       throw new SRUConfigException("Element <Language> " +
-                              "must use ISO-632-3 three letter " +
+                              "must use ISO-639-3 three letter " +
                               "language codes");
                   }
 
@@ -553,7 +553,7 @@ public class SimpleEndpointDescriptionParser {
               String ref = getAttribute((Element) n, "ref");
               if (ref == null) {
                   throw new SRUConfigException("Element <AvailableDataViews> " +
-                          "must carry a 'ref' attribute");
+                          "must have a 'ref' attribute");
               }
               String[] refs = ref.split("\\s+");
               if ((refs == null) || (refs.length < 1)) {
@@ -597,7 +597,7 @@ public class SimpleEndpointDescriptionParser {
               String ref = getAttribute((Element) n, "ref");
               if (ref == null) {
                   throw new SRUConfigException("Element <AvailableLayers> " +
-                          "must carry a 'ref' attribute");
+                          "must have a 'ref' attribute");
               }
               String[] refs = ref.split("\\s+");
               if ((refs == null) || (refs.length < 1)) {
@@ -635,7 +635,7 @@ public class SimpleEndpointDescriptionParser {
           exp = xpath.compile("ed:Resources/ed:Resource");
           list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
           if ((list != null) && (list.getLength() > 0)) {
-              sub = parseRessources(xpath, list, pids,
+              sub = parseResources(xpath, list, pids,
                       supportedDataViews, supportedLayers, hasAdv);
           }
 
