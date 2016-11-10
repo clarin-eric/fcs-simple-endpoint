@@ -181,6 +181,8 @@ public class QueryParser {
             }
         } catch (ExpressionTreeBuilderException e) {
             throw new QueryParserException(e.getMessage(), e.getCause());
+        } catch (QueryParserException e) {
+            throw e;
         } catch (Throwable t) {
             throw new QueryParserException(
                     "an unexpcected occured exception while parsing", t);
