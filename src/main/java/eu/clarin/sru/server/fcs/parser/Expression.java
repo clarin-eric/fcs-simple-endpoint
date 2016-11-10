@@ -127,8 +127,24 @@ public class Expression extends QueryNode {
         sb.append(" ");
         sb.append(operator.toDisplayString());
         sb.append(" \"");
-        sb.append(regex);
+        for (int i = 0; i < regex.length(); i++) {
+            char ch = regex.charAt(i);
+            switch (ch) {
+            case '\n':
+                sb.append("\\n");
+                break;
+            case '\r':
+                sb.append("\\r");
+                break;
+            case '\t':
+                sb.append("\\t");
+                break;
+            default:
+                sb.append(ch);
+            }
+        }
         sb.append("\"");
+        sb.append(" (").append(regex.length()).append(")");
         if (regex_flags != null) {
             sb.append("/");
             if (regex_flags.contains(RegexFlag.CASE_INSENSITIVE)) {

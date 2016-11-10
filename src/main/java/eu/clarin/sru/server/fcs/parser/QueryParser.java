@@ -16,6 +16,7 @@
  */
 package eu.clarin.sru.server.fcs.parser;
 
+import java.text.Normalizer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,6 +24,7 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -78,15 +80,18 @@ public class QueryParser {
             LoggerFactory.getLogger(ExpressionTreeBuilder.class);
     private static final String DEFAULT_IDENTIFIER = "text";
     private static final Operator DEFAULT_OPERATOR = Operator.EQUALS;
+    private static final Normalizer.Form DEFAULT_UNICODE_NORMALIZATION_FORM =
+            Normalizer.Form.NFC;
     private final String defaultIdentifier;
     private final Operator defaultOperator;
+    private final Normalizer.Form unicodeNormalizationForm;
 
 
     /**
      * Constructor.
      */
     public QueryParser() {
-        this(DEFAULT_IDENTIFIER);
+        this(DEFAULT_IDENTIFIER, DEFAULT_UNICODE_NORMALIZATION_FORM);
     }
 
 
@@ -99,6 +104,24 @@ public class QueryParser {
     public QueryParser(String defaultIdentifier) {
         this.defaultIdentifier = defaultIdentifier;
         this.defaultOperator = DEFAULT_OPERATOR;
+        this.unicodeNormalizationForm = DEFAULT_UNICODE_NORMALIZATION_FORM;
+    }
+
+
+    /**
+     * Constructor.
+     *
+     * @param defaultIdentifier
+     *            the default identifer to be used for simple expressions
+     * @param unicodeNormaliztionForm
+     *            the unicode normaliazion form to be usded or <code>null</code>
+     *            to not perform normalization
+     */
+    public QueryParser(String defaultIdentifier,
+            Normalizer.Form unicodeNormaliztionForm) {
+        this.defaultIdentifier = defaultIdentifier;
+        this.defaultOperator = DEFAULT_OPERATOR;
+        this.unicodeNormalizationForm = unicodeNormaliztionForm;
     }
 
 
@@ -538,7 +561,7 @@ public class QueryParser {
                         ctx.getText());
             }
 
-            // check for optional qualifier
+            // handle optional qualifier
             QualifierContext q_ctx = ctx.getChild(QualifierContext.class, 0);
             String qualifier = (q_ctx != null) ? q_ctx.getText() : EMPTY_STRING;
 
@@ -563,8 +586,18 @@ public class QueryParser {
             final Regexp_patternContext p_ctx =
                     ctx.getChild(Regexp_patternContext.class, 0);
             String regex = stripQuotes(p_ctx.getText());
+
+            /* process escape sequences, if present */
+            if (regex.indexOf('\\') != -1) {
+                regex = unescapeString(regex);
+            }
+
+            /* perform unicode normalization, if requested */
+            if (unicodeNormalizationForm != null) {
+                regex = Normalizer.normalize(regex, unicodeNormalizationForm);
+            }
+
             // FIXME: validate regex?
-            // FIXME: translate unicode escape sequences! (if they ever work)
             stack.push(regex);
 
             // handle regex flags, if any
@@ -759,6 +792,131 @@ public class QueryParser {
                             "or ' (singe qoute) character");
         }
         return s;
+    }
+
+
+    private static String unescapeString(String s) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            int cp = s.codePointAt(i);
+            if (cp == '\\') {
+                i++; // skip slash
+                cp = s.codePointAt(i);
+
+                switch (cp) {
+                case '\\': /* slash */
+                    sb.append("\\");
+                    break;
+                case '"': /* double quote */
+                    sb.append("\"");
+                    break;
+                case '\'': /* single-quote */
+                    sb.append("'");
+                    break;
+                case 'n': /* new line */
+                    sb.append("\n");
+                    break;
+                case 't': /* tabulator */
+                    sb.append("\t");
+                    break;
+                case 'x':
+                    i = unescapeUnicode(s, i, 2, sb);
+                    break;
+                case 'u':
+                    i = unescapeUnicode(s, i, 4, sb);
+                    break;
+                case 'U':
+                    i = unescapeUnicode(s, i, 8, sb);
+                    break;
+                }
+            } else {
+                try {
+                    sb.append(Character.toChars(cp));
+                } catch (IllegalArgumentException e) {
+                    throw new ExpressionTreeBuilderException(
+                            "invalid codepoint: 0x" + Integer.toHexString(cp));
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+
+    private static final int unescapeUnicode(String s, int i, int size,
+            StringBuilder sb) {
+        if ((s.length() - i - 1) >= size) {
+            int cp = 0;
+            for (int j = 0; j < 4; j++) {
+                i++;
+                if (j > 0) {
+                    cp = cp << 4;
+                }
+                cp |= parseHexString(s.charAt(i));
+            }
+            try {
+                sb.append(Character.toChars(cp));
+            } catch (IllegalArgumentException e) {
+                throw new ExpressionTreeBuilderException(
+                        "invalid codepoint: 0x" + Integer.toHexString(cp));
+            }
+            return i;
+        } else {
+            throw new ExpressionTreeBuilderException(
+                    "truncated escape sequence: \\" + s.substring(i));
+        }
+    }
+
+
+    private static final int parseHexString(char c) {
+        switch (c) {
+        case '0':
+            return 0;
+        case '1':
+            return 1;
+        case '2':
+            return 2;
+        case '3':
+            return 3;
+        case '4':
+            return 4;
+        case '5':
+            return 5;
+        case '6':
+            return 6;
+        case '7':
+            return 7;
+        case '8':
+            return 8;
+        case '9':
+            return 9;
+        case 'a':
+            /* FALL-THROUGH */
+        case 'A':
+            return 10;
+        case 'b':
+            /* FALL-THROUGH */
+        case 'B':
+            return 11;
+        case 'c':
+            /* FALL-THROUGH */
+        case 'C':
+            return 12;
+        case 'd':
+            /* FALL-THROUGH */
+        case 'D':
+            return 13;
+        case 'e':
+            /* FALL-THROUGH */
+        case 'E':
+            return 14;
+        case 'f':
+            /* FALL-THROUGH */
+        case 'F':
+            return 15;
+        default:
+            throw new ExpressionTreeBuilderException(
+                    "invalud hex character: " + c);
+        }
     }
 
 
