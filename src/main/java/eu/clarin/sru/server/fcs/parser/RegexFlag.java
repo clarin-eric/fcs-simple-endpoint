@@ -24,11 +24,11 @@ public enum RegexFlag {
     /**
      * case insensitive.
      */
-    CASE_INSENSITVE,
+    CASE_INSENSITIVE,
     /**
      * case sensitive.
      */
-    CASE_SENSITVE,
+    CASE_SENSITIVE,
     /**
      * match exactly (= literally).
      */

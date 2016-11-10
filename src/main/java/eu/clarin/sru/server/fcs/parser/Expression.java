@@ -131,10 +131,10 @@ public class Expression extends QueryNode {
         sb.append("\"");
         if (regex_flags != null) {
             sb.append("/");
-            if (regex_flags.contains(RegexFlag.CASE_INSENSITVE)) {
+            if (regex_flags.contains(RegexFlag.CASE_INSENSITIVE)) {
                 sb.append("i");
             }
-            if (regex_flags.contains(RegexFlag.CASE_SENSITVE)) {
+            if (regex_flags.contains(RegexFlag.CASE_SENSITIVE)) {
                 sb.append("I");
             }
             if (regex_flags.contains(RegexFlag.LITERAL_MATCHING)) {

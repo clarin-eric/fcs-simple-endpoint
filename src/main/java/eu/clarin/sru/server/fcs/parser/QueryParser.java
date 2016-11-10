@@ -579,24 +579,41 @@ public class QueryParser {
                     case 'i':
                         /* $FALL-THROUGH$ */
                     case 'c':
-                        flags.add(RegexFlag.CASE_INSENSITVE);
+                        flags.add(RegexFlag.CASE_INSENSITIVE);
                         break;
                     case 'I':
                         /* $FALL-THROUGH$ */
                     case 'C':
-                        flags.add(RegexFlag.CASE_SENSITVE);
+                        flags.add(RegexFlag.CASE_SENSITIVE);
                         break;
                     case 'l':
                         flags.add(RegexFlag.LITERAL_MATCHING);
+                        break;
                     case 'd':
                         flags.add(RegexFlag.IGNORE_DIACRITICS);
                         break;
                     default:
                         throw new ExpressionTreeBuilderException(
-                                "unexpected regex flag: " + s.charAt(i));
+                                "unknown regex modifier flag: " + s.charAt(i));
                     } // switch
                 }
-                // FIXME: validate flags? most combinations are mutually exclusive
+
+                // validate regex flags
+                if (flags.contains(RegexFlag.CASE_SENSITIVE) &&
+                        flags.contains(RegexFlag.CASE_INSENSITIVE)) {
+                    throw new ExpressionTreeBuilderException(
+                            "invalid combination of regex modifier flags: " +
+                            "'i' or 'c' and 'I' or 'C' are mutually exclusive");
+                }
+                if (flags.contains(RegexFlag.LITERAL_MATCHING) &&
+                            (flags.contains(RegexFlag.CASE_SENSITIVE) ||
+                             flags.contains(RegexFlag.CASE_INSENSITIVE) ||
+                             flags.contains(RegexFlag.IGNORE_DIACRITICS))) {
+                    throw new ExpressionTreeBuilderException(
+                            "invalid combination of regex modifier flags: 'l' " +
+                            "is mutually exclusive with 'i', 'c', 'I', 'C' or 'd'");
+                }
+
                 stack.push(flags);
             } else {
                 // regex without flags, so push 'empty' flags on stack
