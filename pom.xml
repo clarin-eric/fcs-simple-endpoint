@@ -19,7 +19,7 @@
         <maven.compiler.source>1.6</maven.compiler.source>
         <maven.compiler.target>1.6</maven.compiler.target>
         <!-- versions of common dependencies -->
-        <slf4j.version>1.7.12</slf4j.version>
+        <slf4j.version>1.7.16</slf4j.version>
     </properties>
 
     <dependencies>
@@ -63,7 +63,14 @@
 					<groupId>stax</groupId>
 				</exclusion>
 			</exclusions>
-        </dependency> 
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <dependencyManagement>
@@ -73,7 +80,6 @@
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
             </dependency>
-
         </dependencies>
     </dependencyManagement>
 
