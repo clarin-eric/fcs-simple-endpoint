@@ -948,17 +948,19 @@ public class QueryParser {
              * also be used by the QueryVistor to add addition query error
              * information
              */
-            if (offendingSymbol instanceof Token) {
-                final Token t = (Token) offendingSymbol;
-                int pos = t.getStartIndex();
-                if (pos != -1) {
-                    StringBuilder x = new StringBuilder();
-                    while (pos-- > 0) {
-                        x.append(" ");
+            if (logger.isDebugEnabled()) {
+                if (offendingSymbol instanceof Token) {
+                    final Token t = (Token) offendingSymbol;
+                    int pos = t.getStartIndex();
+                    if (pos != -1) {
+                        StringBuilder x = new StringBuilder();
+                        while (pos-- > 0) {
+                            x.append(" ");
+                        }
+                        x.append("^- ").append(msg);
+                        logger.debug("query: {}", query);
+                        logger.debug("       {}", x.toString());
                     }
-                    x.append("^- ").append(msg);
-                    logger.error("query: {}", query);
-                    logger.error("       {}", x.toString());
                 }
             }
 
