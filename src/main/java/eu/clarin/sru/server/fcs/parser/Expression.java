@@ -144,7 +144,6 @@ public class Expression extends QueryNode {
             }
         }
         sb.append("\"");
-        sb.append(" (").append(regex.length()).append(")");
         if (regex_flags != null) {
             sb.append("/");
             if (regex_flags.contains(RegexFlag.CASE_INSENSITIVE)) {
