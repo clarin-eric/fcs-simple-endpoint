@@ -75,8 +75,10 @@ public class FCSQueryParser implements SRUQueryParser<QueryNode> {
 
         final String rawQuery = parameters.get(PARAM_QUERY);
         if (rawQuery == null) {
-            diagnostics.addDiagnostic(SRUConstants.SRU_GENERAL_SYSTEM_ERROR,
-                    null, "no query passed to query parser");
+            diagnostics.addDiagnostic(
+                    SRUConstants.SRU_GENERAL_SYSTEM_ERROR,
+                    null,
+                    "No query passed to query parser.");
             return null;
         }
 
@@ -84,11 +86,15 @@ public class FCSQueryParser implements SRUQueryParser<QueryNode> {
             QueryNode parsedQuery = parser.parse(rawQuery);
             result = new FCSQuery(rawQuery, parsedQuery);
         } catch (QueryParserException e) {
-            diagnostics.addDiagnostic(Constants.FCS_DIAGNOSTIC_GENERAL_QUERY_SYNTAX_ERROR,
-                    null, e.getMessage());
+            diagnostics.addDiagnostic(
+                    Constants.FCS_DIAGNOSTIC_GENERAL_QUERY_SYNTAX_ERROR,
+                    null,
+                    e.getMessage());
         } catch (Exception e) {
-            diagnostics.addDiagnostic(SRUConstants.SRU_GENERAL_SYSTEM_ERROR,
-                    null, "Unexpected error while parsing query.");
+            diagnostics.addDiagnostic(
+                    SRUConstants.SRU_GENERAL_SYSTEM_ERROR,
+                    null,
+                    "Unexpected error while parsing query.");
         }
         return result;
     }
