@@ -50,7 +50,7 @@ public class FCSQueryParser implements SRUQueryParser<QueryNode> {
             throw new NullPointerException("version == null");
         }
         /*
-         * CQL is supported by all SRU versions ...
+         * FCS-QL is only supported by SRU 2.0
          */
         return version.compareTo(SRUVersion.VERSION_2_0) >= 0;
     }
@@ -114,3 +114,4 @@ public class FCSQueryParser implements SRUQueryParser<QueryNode> {
     }
 
 } // class FCSQueryParser
+
