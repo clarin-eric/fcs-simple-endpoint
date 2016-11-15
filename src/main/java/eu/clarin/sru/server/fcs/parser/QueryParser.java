@@ -848,7 +848,7 @@ public class QueryParser {
             StringBuilder sb) {
         if ((s.length() - i - 1) >= size) {
             int cp = 0;
-            for (int j = 0; j < 4; j++) {
+            for (int j = 0; j < size; j++) {
                 i++;
                 if (j > 0) {
                     cp = cp << 4;
