@@ -196,6 +196,11 @@ public class QueryParser {
     private final class ExpressionTreeBuilder
             extends FCSParserBaseVisitor<Void> {
         private final Deque<Object> stack;
+        /*
+         * pre-allocate buffer to store chars returned by Character.toChars in
+         * unescapeString()
+         */
+        private final char[] buf = new char[2];
 
 
         private ExpressionTreeBuilder(int initStackSize) {
@@ -591,7 +596,7 @@ public class QueryParser {
 
             /* process escape sequences, if present */
             if (regex.indexOf('\\') != -1) {
-                regex = unescapeString(regex);
+                regex = unescapeString(regex, buf);
             }
 
             /* perform unicode normalization, if requested */
@@ -797,13 +802,7 @@ public class QueryParser {
     }
 
 
-    private static String unescapeString(String s) {
-        /*
-         * buffer to store chars by Character.toChars; pre-allocate to avoid
-         * allocation for every codepoint.
-         */
-        final char[] buf = new char[2];
-
+    private static String unescapeString(String s, char[] buf) {
         final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {
             int cp = s.codePointAt(i);
