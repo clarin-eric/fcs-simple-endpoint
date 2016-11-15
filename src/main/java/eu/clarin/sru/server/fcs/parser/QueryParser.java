@@ -836,6 +836,10 @@ public class QueryParser {
                 case 'U':   /* U HEX HEX HEX HEX HEX HEX HEX HEX */
                     i = unescapeUnicode(s, i, 8, sb, buf);
                     break;
+                default:
+                    throw new ExpressionTreeBuilderException(
+                            "invalid escape sequence: \\" +
+                                    new String(Character.toChars(cp)));
                 }
             } else {
                 try {
