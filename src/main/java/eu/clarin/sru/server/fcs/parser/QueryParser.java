@@ -879,7 +879,7 @@ public class QueryParser {
                     sb.append(buf, 0, len);
                 } catch (IllegalArgumentException e) {
                     throw new ExpressionTreeBuilderException(
-                            "invalid codepoint: 0x" +
+                            "invalid codepoint: U+" +
                                     Integer.toHexString(cp).toUpperCase());
                 }
             }
@@ -904,7 +904,7 @@ public class QueryParser {
                 sb.append(buf, 0, len);
             } catch (IllegalArgumentException e) {
                 throw new ExpressionTreeBuilderException(
-                        "invalid codepoint: 0x" +
+                        "invalid codepoint: U+" +
                                 Integer.toHexString(cp).toUpperCase());
             }
             return i;
