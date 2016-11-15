@@ -827,6 +827,39 @@ public class QueryParser {
                 case 't':   /* tabulator */
                     sb.append("\t");
                     break;
+                case '.':   /* regex: dot */
+                    sb.append("\\.");
+                    break;
+                case '^':   /* regex: caret */
+                    sb.append("\\^");
+                    break;
+                case '$':   /* regex: dollar */
+                    sb.append("\\$");
+                    break;
+                case '*':   /* regex: asterisk */
+                    sb.append("\\*");
+                    break;
+                case '+':   /* regex: plus */
+                    sb.append("\\+");
+                    break;
+                case '?':   /* regex: question mark */
+                    sb.append("\\?");
+                    break;
+                case '(':   /* regex: opening parenthesis */
+                    sb.append("\\(");
+                    break;
+                case ')':   /* regex: closing parenthesis */
+                    sb.append("\\)");
+                    break;
+                case '{':   /* regex: opening curly brace */
+                    sb.append("\\{");
+                    break;
+                case '[':   /* regex: opening square bracket */
+                    sb.append("\\[");
+                    break;
+                case '|':   /* regex: vertical bar */
+                    sb.append("\\|");
+                    break;
                 case 'x':   /* x HEX HEX */
                     i = unescapeUnicode(s, i, 2, sb, buf);
                     break;
