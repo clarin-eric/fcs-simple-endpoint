@@ -798,7 +798,13 @@ public class QueryParser {
 
 
     private static String unescapeString(String s) {
-        StringBuilder sb = new StringBuilder();
+        /*
+         * buffer to store chars by Character.toChars; pre-allocate to avoid
+         * allocation for every codepoint.
+         */
+        final char[] buf = new char[2];
+
+        final StringBuilder sb = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {
             int cp = s.codePointAt(i);
             if (cp == '\\') {
@@ -809,34 +815,36 @@ public class QueryParser {
                 case '\\': /* slash */
                     sb.append("\\");
                     break;
-                case '"': /* double quote */
+                case '"':   /* double quote */
                     sb.append("\"");
                     break;
-                case '\'': /* single-quote */
+                case '\'':  /* single quote */
                     sb.append("'");
                     break;
-                case 'n': /* new line */
+                case 'n':   /* new line */
                     sb.append("\n");
                     break;
-                case 't': /* tabulator */
+                case 't':   /* tabulator */
                     sb.append("\t");
                     break;
-                case 'x':
-                    i = unescapeUnicode(s, i, 2, sb);
+                case 'x':   /* x HEX HEX */
+                    i = unescapeUnicode(s, i, 2, sb, buf);
                     break;
-                case 'u':
-                    i = unescapeUnicode(s, i, 4, sb);
+                case 'u':   /* u HEX HEX HEX HEX */
+                    i = unescapeUnicode(s, i, 4, sb, buf);
                     break;
-                case 'U':
-                    i = unescapeUnicode(s, i, 8, sb);
+                case 'U':   /* U HEX HEX HEX HEX HEX HEX HEX HEX */
+                    i = unescapeUnicode(s, i, 8, sb, buf);
                     break;
                 }
             } else {
                 try {
-                    sb.append(Character.toChars(cp));
+                    final int len = Character.toChars(cp, buf, 0);
+                    sb.append(buf, 0, len);
                 } catch (IllegalArgumentException e) {
                     throw new ExpressionTreeBuilderException(
-                            "invalid codepoint: 0x" + Integer.toHexString(cp));
+                            "invalid codepoint: 0x" +
+                                    Integer.toHexString(cp).toUpperCase());
                 }
             }
         }
@@ -845,7 +853,7 @@ public class QueryParser {
 
 
     private static final int unescapeUnicode(String s, int i, int size,
-            StringBuilder sb) {
+            StringBuilder sb, char[] buf) {
         if ((s.length() - i - 1) >= size) {
             int cp = 0;
             for (int j = 0; j < size; j++) {
@@ -853,10 +861,11 @@ public class QueryParser {
                 if (j > 0) {
                     cp = cp << 4;
                 }
-                cp |= parseHexString(s.charAt(i));
+                cp |= parseHexString(s.codePointAt(i));
             }
             try {
-                sb.append(Character.toChars(cp));
+                final int len = Character.toChars(cp, buf, 0);
+                sb.append(buf, 0, len);
             } catch (IllegalArgumentException e) {
                 throw new ExpressionTreeBuilderException(
                         "invalid codepoint: 0x" + Integer.toHexString(cp));
@@ -869,7 +878,7 @@ public class QueryParser {
     }
 
 
-    private static final int parseHexString(char c) {
+    private static final int parseHexString(int c) {
         switch (c) {
         case '0':
             return 0;
@@ -916,8 +925,13 @@ public class QueryParser {
         case 'F':
             return 15;
         default:
+            /*
+             * actually, this should never happen, as ANTLR's lexer should catch
+             * illegal HEX characters
+             */
             throw new ExpressionTreeBuilderException(
-                    "invalud hex character: " + c);
+                    "invalud hex character: " +
+                            new String(Character.toChars(c)));
         }
     }
 
