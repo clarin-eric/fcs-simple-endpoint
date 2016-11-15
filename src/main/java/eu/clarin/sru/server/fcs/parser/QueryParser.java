@@ -185,7 +185,7 @@ public class QueryParser {
             throw e;
         } catch (Throwable t) {
             throw new QueryParserException(
-                    "an unexpcected occured exception while parsing", t);
+                    "an unexpected exception occured while parsing", t);
         }
     }
 
