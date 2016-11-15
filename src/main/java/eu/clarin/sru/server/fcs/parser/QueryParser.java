@@ -744,7 +744,7 @@ public class QueryParser {
             min = parseInteger(ctx.getChild(int1Idx).getText());
             max = min;
         }
-        if ((max != Constants.OCCURS_UNBOUNDED) && min > max) {
+        if ((max != Constants.OCCURS_UNBOUNDED) && (min > max)) {
             throw new ExpressionTreeBuilderException(
                     "bad qualifier: min > max (" + min + " > " + max + ")");
         }
