@@ -99,7 +99,7 @@ public class QueryParser {
      * Constructor.
      *
      * @param defaultIdentifier
-     *            the default identifer to be used for simple expressions
+     *            the default identifier to be used for simple expressions
      */
     public QueryParser(String defaultIdentifier) {
         this.defaultIdentifier = defaultIdentifier;
@@ -112,9 +112,9 @@ public class QueryParser {
      * Constructor.
      *
      * @param defaultIdentifier
-     *            the default identifer to be used for simple expressions
+     *            the default identifier to be used for simple expressions
      * @param unicodeNormaliztionForm
-     *            the unicode normaliazion form to be usded or <code>null</code>
+     *            the Unicode normalization form to be used or <code>null</code>
      *            to not perform normalization
      */
     public QueryParser(String defaultIdentifier,
