@@ -779,19 +779,19 @@ public class QueryParser {
                 s = s.substring(1, s.length() - 1);
             } else {
                 throw new ExpressionTreeBuilderException(
-                        "value not properly quoted; wrong closing quote");
+                        "value not properly quoted; invalid closing quote");
             }
         } else if (s.startsWith("'")) {
             if (s.endsWith("'")) {
                 s = s.substring(1, s.length() - 1);
             } else {
                 throw new ExpressionTreeBuilderException(
-                        "value not properly quoted; wrong closing quote");
+                        "value not properly quoted; invalid closing quote");
             }
         } else {
             throw new ExpressionTreeBuilderException(
                     "value not properly quoted; expected \" (double quote) " +
-                            "or ' (singe qoute) character");
+                            "or ' (single qoute) character");
         }
         return s;
     }
