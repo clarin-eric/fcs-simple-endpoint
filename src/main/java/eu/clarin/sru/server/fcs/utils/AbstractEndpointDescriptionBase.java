@@ -32,7 +32,9 @@ import eu.clarin.sru.server.fcs.Layer;
  * @see EndpointDescription
  *
  */
-public abstract class AbstractEndpointDescriptionBase implements EndpointDescription {
+public abstract class AbstractEndpointDescriptionBase
+        implements EndpointDescription {
+    protected final int version;
     protected final List<URI> capabilities;
     protected final List<DataView> supportedDataViews;
     protected final List<Layer> supportedLayers;
@@ -41,6 +43,8 @@ public abstract class AbstractEndpointDescriptionBase implements EndpointDescrip
     /**
      * Constructor.
      *
+     * @param version
+     *            version of this endpoint description
      * @param capabilities
      *            a list of capabilities supported by this endpoint
      * @param supportedDataViews
@@ -48,8 +52,14 @@ public abstract class AbstractEndpointDescriptionBase implements EndpointDescrip
      * @param supportedLayers
      *            a list of layers that are supported by this endpoint
      */
-    protected AbstractEndpointDescriptionBase(List<URI> capabilities,
-            List<DataView> supportedDataViews, List<Layer> supportedLayers) {
+    protected AbstractEndpointDescriptionBase(int version,
+            List<URI> capabilities, List<DataView> supportedDataViews,
+            List<Layer> supportedLayers) {
+        if ((version != 1) && (version != 2)) {
+            throw new IllegalArgumentException("version must be either 1 or 2");
+        }
+        this.version = version;
+
         if (capabilities == null) {
             throw new NullPointerException("capabilities == null");
         }
@@ -91,6 +101,18 @@ public abstract class AbstractEndpointDescriptionBase implements EndpointDescrip
         } else {
             this.supportedLayers = null;
         }
+    }
+
+
+    @Override
+    public int getVersion() {
+        return version;
+    }
+
+
+    @Override
+    public boolean isVersion(int version) {
+        return this.version == version;
     }
 
 

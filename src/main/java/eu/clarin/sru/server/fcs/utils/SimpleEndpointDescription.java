@@ -44,6 +44,8 @@ public class SimpleEndpointDescription extends AbstractEndpointDescriptionBase {
     /**
      * Constructor.
      *
+     * @param version
+     *            version of this endpoint description
      * @param capabilities
      *            a list of capabilities supported by this endpoint
      * @param supportedDataViews
@@ -58,12 +60,12 @@ public class SimpleEndpointDescription extends AbstractEndpointDescriptionBase {
      *            should be performed case-sensitive, <code>false</code>
      *            otherwise
      */
-    public SimpleEndpointDescription(List<URI> capabilities,
+    public SimpleEndpointDescription(int version, List<URI> capabilities,
             List<DataView> supportedDataViews,
             List<Layer> supportedLayers,
             List<ResourceInfo> resources,
             boolean pidCaseSensitive) {
-        super(capabilities, supportedDataViews, supportedLayers);
+        super(version, capabilities, supportedDataViews, supportedLayers);
 
         if (resources == null) {
             throw new NullPointerException("entries == null");

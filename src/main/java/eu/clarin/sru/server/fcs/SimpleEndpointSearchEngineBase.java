@@ -55,7 +55,6 @@ public abstract class SimpleEndpointSearchEngineBase extends
     private static final String ED_NS =
             "http://clarin.eu/fcs/endpoint-description";
     private static final String ED_PREFIX = "ed";
-    private static final int ED_VERSION = 2;
     private static final Logger logger =
             LoggerFactory.getLogger(SimpleEndpointSearchEngineBase.class);
     protected EndpointDescription endpointDescription;
@@ -256,7 +255,8 @@ public abstract class SimpleEndpointSearchEngineBase extends
         writer.setPrefix(ED_PREFIX, ED_NS);
         writer.writeStartElement(ED_NS, "EndpointDescription");
         writer.writeNamespace(ED_PREFIX, ED_NS);
-        writer.writeAttribute("version", Integer.toString(ED_VERSION));
+        writer.writeAttribute("version",
+                Integer.toString(endpointDescription.getVersion()));
 
         // Capabilities
         writer.writeStartElement(ED_NS, "Capabilities");
@@ -291,34 +291,37 @@ public abstract class SimpleEndpointSearchEngineBase extends
         }
         writer.writeEndElement(); // "SupportedDataViews" element
 
-        // SupportedLayers
-        final List<Layer> layers = endpointDescription.getSupportedLayers();
-        if (layers != null) {
-            writer.writeStartElement(ED_NS, "SupportedLayers");
-            for (Layer layer : layers) {
-                writer.writeStartElement(ED_NS, "SupportedLayer");
-                writer.writeAttribute("id", layer.getId());
-                writer.writeAttribute("result-id",
-                        layer.getResultId().toString());
-                if (layer.getContentEncoding() == Layer.ContentEncoding.EMPTY) {
-                    writer.writeAttribute("type", "empty");
-                }
-                if (layer.getQualifier() != null) {
-                    writer.writeAttribute("qualifier", layer.getQualifier());
-                }
-                if (layer.getAltValueInfo() != null) {
-                    writer.writeAttribute("alt-value-info",
-                            layer.getAltValueInfo());
-                    if (layer.getAltValueInfoURI() != null) {
-                        writer.writeAttribute("alt-value-info-uri",
-                                layer.getAltValueInfoURI().toString());
+        if (endpointDescription.isVersion(EndpointDescription.VERSION_2)) {
+            // SupportedLayers
+            final List<Layer> layers = endpointDescription.getSupportedLayers();
+            if (layers != null) {
+                writer.writeStartElement(ED_NS, "SupportedLayers");
+                for (Layer layer : layers) {
+                    writer.writeStartElement(ED_NS, "SupportedLayer");
+                    writer.writeAttribute("id", layer.getId());
+                    writer.writeAttribute("result-id",
+                            layer.getResultId().toString());
+                    if (layer.getContentEncoding() ==
+                            Layer.ContentEncoding.EMPTY) {
+                        writer.writeAttribute("type", "empty");
                     }
+                    if (layer.getQualifier() != null) {
+                        writer.writeAttribute("qualifier",
+                                layer.getQualifier());
+                    }
+                    if (layer.getAltValueInfo() != null) {
+                        writer.writeAttribute("alt-value-info",
+                                layer.getAltValueInfo());
+                        if (layer.getAltValueInfoURI() != null) {
+                            writer.writeAttribute("alt-value-info-uri",
+                                    layer.getAltValueInfoURI().toString());
+                        }
+                    }
+                    writer.writeCharacters(layer.getType());
+                    writer.writeEndElement(); // "SupportedLayer" element
                 }
-                writer.writeCharacters(layer.getType());
-                writer.writeEndElement(); // "SupportedLayer" element
+                writer.writeEndElement(); // "SupportedLayers" element
             }
-            writer.writeEndElement(); // "SupportedLayers" element
-
         }
 
         // Resources
@@ -328,8 +331,8 @@ public abstract class SimpleEndpointSearchEngineBase extends
                             EndpointDescription.PID_ROOT);
             writeResourceInfos(writer, resources);
         } catch (SRUException e) {
-            throw new XMLStreamException("error retriving top-level resources",
-                    e);
+            throw new XMLStreamException(
+                    "error retriving top-level resources", e);
         }
         writer.writeEndElement(); // "EndpointDescription" element
     }
@@ -400,17 +403,20 @@ public abstract class SimpleEndpointSearchEngineBase extends
                 writer.writeEmptyElement(ED_NS, "AvailableDataViews");
                 writer.writeAttribute("ref", sb.toString());
 
-                final List<Layer> layers = resource.getAvailableLayers();
-                if (layers != null) {
-                    sb = new StringBuilder();
-                    for (Layer layer : resource.getAvailableLayers()) {
-                        if (sb.length() > 0) {
-                            sb.append(" ");
+                if (endpointDescription.isVersion(
+                        EndpointDescription.VERSION_2)) {
+                    final List<Layer> layers = resource.getAvailableLayers();
+                    if (layers != null) {
+                        sb = new StringBuilder();
+                        for (Layer layer : resource.getAvailableLayers()) {
+                            if (sb.length() > 0) {
+                                sb.append(" ");
+                            }
+                            sb.append(layer.getId());
                         }
-                        sb.append(layer.getId());
+                        writer.writeEmptyElement(ED_NS, "AvailableLayers");
+                        writer.writeAttribute("ref", sb.toString());
                     }
-                    writer.writeEmptyElement(ED_NS, "AvailableLayers");
-                    writer.writeAttribute("ref", sb.toString());
                 }
 
                 // child resources

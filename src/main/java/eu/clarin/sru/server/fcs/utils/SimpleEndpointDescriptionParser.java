@@ -160,10 +160,32 @@ public class SimpleEndpointDescriptionParser {
             }
         });
 
+        // version
+        int version = -1;
+        XPathExpression exp =
+                xpath.compile("//ed:EndpointDescription/@version");
+        String v = (String) exp.evaluate(doc, XPathConstants.STRING);
+        if (v != null) {
+            try {
+                version = Integer.parseInt(v);
+                if ((version != 1) && (version != 2)) {
+                    throw new SRUConfigException("Attribute @version " +
+                            "element <EndpointDescription> must have a " +
+                            "value of either '1' or '2' ");
+                }
+            } catch (NumberFormatException e) {
+                throw new SRUConfigException("Cannot parse version number", e);
+            }
+        }
+        if (version == -1) {
+            throw new SRUConfigException("Attribute @version missing on "+
+                    "element <EndpointDescription>");
+        }
+        logger.debug("endpoint description version is {}", version);
+
         // capabilities
         List<URI> capabilities = new ArrayList<URI>();
-        XPathExpression exp =
-                xpath.compile("//ed:Capabilities/ed:Capability");
+        exp = xpath.compile("//ed:Capabilities/ed:Capability");
         NodeList list =
                 (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
         if ((list != null) && (list.getLength() > 0)) {
@@ -193,9 +215,15 @@ public class SimpleEndpointDescriptionParser {
                     "update your endpoint description!", CAP_BASIC_SEARCH);
             capabilities.add(CAP_BASIC_SEARCH);
         }
+        if (capabilities.contains(CAP_ADVANCED_SEARCH) && (version < 2)) {
+            logger.warn("Endpoint description is declared as version " +
+                    "FCS 1.0 (@version = 1), but contains support for " +
+                    "Advanced Search in capabilities list! FCS 1.0 only " +
+                    "supports Basic Search");
+        }
         logger.debug("CAPS:'{}'", capabilities);
 
-        // used to check for id attribute uniqueness
+        // used to check for uniqueness of id attribute
         final Set<String> xml_ids = new HashSet<String>();
 
         // supported data views
@@ -214,7 +242,8 @@ public class SimpleEndpointDescriptionParser {
 
                 if (xml_ids.contains(id)) {
                     throw new SRUConfigException("The value of attribute " +
-                            "'id' of element <SupportedDataView> must be unique: " + id);
+                            "'id' of element <SupportedDataView> must be " +
+                            "unique: " + id);
                 }
                 xml_ids.add(id);
 
@@ -288,9 +317,7 @@ public class SimpleEndpointDescriptionParser {
             throw new SRUConfigException("Endpoint claimes to support " +
                     "Advanced FCS but does not declare Advanced Data View (" +
                     MIMETYPE_ADV + ") in <SupportedDataViews>");
-
         }
-
 
         // supported layers
         List<Layer> supportedLayers = null;
@@ -308,7 +335,8 @@ public class SimpleEndpointDescriptionParser {
 
                 if (xml_ids.contains(id)) {
                     throw new SRUConfigException("The value of attribute " +
-                            "'id' of element <SupportedLayer> must be unique: " + id);
+                            "'id' of element <SupportedLayer> must be " +
+                            "unique: " + id);
                 }
                 xml_ids.add(id);
 
@@ -354,7 +382,8 @@ public class SimpleEndpointDescriptionParser {
                     } else if (LAYER_ENCODING_EMPTY.equals(s)) {
                         encoding = Layer.ContentEncoding.EMPTY;
                     } else {
-                        throw new SRUConfigException("invalid layer encoding: " + s);
+                        throw new SRUConfigException(
+                                "invalid layer encoding: " + s);
                     }
                 }
 
@@ -367,12 +396,11 @@ public class SimpleEndpointDescriptionParser {
                         try {
                           altValueInfoURI = new URI(s);
                         } catch (URISyntaxException e) {
-                            throw new SRUConfigException("Attribute 'alt-value-info-uri' on " +
-                                    "Element <SupportedLayer> is not encoded " +
+                            throw new SRUConfigException("Attribute " +
+                                    "'alt-value-info-uri' on Element " +
+                                    "<SupportedLayer> is not encoded " +
                                     "as proper URI: " + s);
                         }
-                    } else {
-
                     }
                 }
 
@@ -400,13 +428,14 @@ public class SimpleEndpointDescriptionParser {
         list = (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
         final Set<String> pids = new HashSet<String>();
         List<ResourceInfo> resources = parseResources(xpath, list, pids,
-                supportedDataViews, supportedLayers, hasAdvView);
+                supportedDataViews, supportedLayers, version, hasAdvView);
         if ((resources == null) || resources.isEmpty()) {
             throw new SRUConfigException("No resources where " +
                     "defined in endpoint description");
         }
 
-        return new SimpleEndpointDescription(capabilities,
+        return new SimpleEndpointDescription(version,
+                capabilities,
                 supportedDataViews,
                 supportedLayers,
                 resources,
@@ -416,242 +445,243 @@ public class SimpleEndpointDescriptionParser {
 
     private static List<ResourceInfo> parseResources(XPath xpath,
             NodeList nodes, Set<String> pids, List<DataView> supportedDataViews,
-            List<Layer> supportedLayers, boolean hasAdv)
+            List<Layer> supportedLayers, int version, boolean hasAdv)
                     throws SRUConfigException, XPathExpressionException {
         List<ResourceInfo> ris = null;
-      for (int k = 0; k < nodes.getLength(); k++) {
-          final Element node                = (Element) nodes.item(k);
-          String pid                        = null;
-          Map<String, String> titles        = null;
-          Map<String, String> descrs        = null;
-          String link                       = null;
-          List<String> langs                = null;
-          List<DataView> availableDataViews = null;
-          List<Layer> availableLayers       = null;
-          List<ResourceInfo> sub            = null;
+        for (int k = 0; k < nodes.getLength(); k++) {
+            final Element node = (Element) nodes.item(k);
+            String pid = null;
+            Map<String, String> titles = null;
+            Map<String, String> descrs = null;
+            String link = null;
+            List<String> langs = null;
+            List<DataView> availableDataViews = null;
+            List<Layer> availableLayers = null;
+            List<ResourceInfo> sub = null;
 
-          pid = getAttribute(node, "pid");
-          if (pid == null) {
-              throw new SRUConfigException("Element <ResourceInfo> " +
-                      "must have a proper 'pid' attribute");
-          }
-          if (pids.contains(pid)) {
-              throw new SRUConfigException("Another element <Resource> " +
-                      "with pid '" + pid + "' already exists");
-          }
-          pids.add(pid);
+            pid = getAttribute(node, "pid");
+            if (pid == null) {
+                throw new SRUConfigException("Element <ResourceInfo> " +
+                        "must have a proper 'pid' attribute");
+            }
+            if (pids.contains(pid)) {
+                throw new SRUConfigException("Another element <Resource> " +
+                        "with pid '" + pid + "' already exists");
+            }
+            pids.add(pid);
 
-          XPathExpression exp = xpath.compile("ed:Title");
-          NodeList list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
-          if ((list != null) && (list.getLength() > 0)) {
-              for (int i = 0; i < list.getLength(); i++) {
-                  final Element n = (Element) list.item(i);
+            XPathExpression exp = xpath.compile("ed:Title");
+            NodeList list = (NodeList) exp.evaluate(node,
+                    XPathConstants.NODESET);
+            if ((list != null) && (list.getLength() > 0)) {
+                for (int i = 0; i < list.getLength(); i++) {
+                    final Element n = (Element) list.item(i);
 
-                  final String lang = getLangAttribute(n);
-                  if (lang == null) {
-                      throw new SRUConfigException("Element <Title> " +
-                              "must have a proper 'xml:lang' attribute");
-                  }
+                    final String lang = getLangAttribute(n);
+                    if (lang == null) {
+                        throw new SRUConfigException("Element <Title> " +
+                                "must have a proper 'xml:lang' attribute");
+                    }
 
-                  final String title = cleanString(n.getTextContent());
-                  if (title == null) {
-                      throw new SRUConfigException("Element <Title> " +
-                              "must have a non-empty 'xml:lang' attribute");
-                  }
+                    final String title = cleanString(n.getTextContent());
+                    if (title == null) {
+                        throw new SRUConfigException("Element <Title> " +
+                                "must have a non-empty 'xml:lang' attribute");
+                    }
 
-                  if (titles == null) {
-                      titles = new HashMap<String, String>();
-                  }
-                  if (titles.containsKey(lang)) {
-                      logger.warn("title with language '{}' already exists",
-                              lang);
-                  } else {
-                      logger.debug("title: '{}' '{}'", lang, title);
-                      titles.put(lang, title);
-                  }
-              }
-              if ((titles != null) && !titles.containsKey(LANG_EN)) {
-                  throw new SRUConfigException(
-                          "A <Title> with language 'en' is mandatory");
-              }
-          }
+                    if (titles == null) {
+                        titles = new HashMap<String, String>();
+                    }
+                    if (titles.containsKey(lang)) {
+                        logger.warn("title with language '{}' already exists",
+                                lang);
+                    } else {
+                        logger.debug("title: '{}' '{}'", lang, title);
+                        titles.put(lang, title);
+                    }
+                }
+                if ((titles != null) && !titles.containsKey(LANG_EN)) {
+                    throw new SRUConfigException(
+                            "A <Title> with language 'en' is mandatory");
+                }
+            }
 
-          exp = xpath.compile("ed:Description");
-          list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
-          if ((list != null) && (list.getLength() > 0)) {
-              for (int i = 0; i < list.getLength(); i++) {
-                  Element n = (Element) list.item(i);
+            exp = xpath.compile("ed:Description");
+            list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
+            if ((list != null) && (list.getLength() > 0)) {
+                for (int i = 0; i < list.getLength(); i++) {
+                    Element n = (Element) list.item(i);
 
-                  String lang = getLangAttribute(n);
-                  if (lang == null) {
-                      throw new SRUConfigException("Element <Description> " +
-                              "must have a proper 'xml:lang' attribute");
+                    String lang = getLangAttribute(n);
+                    if (lang == null) {
+                        throw new SRUConfigException("Element <Description> " +
+                                "must have a proper 'xml:lang' attribute");
 
-                  }
-                  String desc = cleanString(n.getTextContent());
+                    }
+                    String desc = cleanString(n.getTextContent());
 
-                  if (descrs == null) {
-                      descrs = new HashMap<String, String>();
-                  }
+                    if (descrs == null) {
+                        descrs = new HashMap<String, String>();
+                    }
 
-                  if (descrs.containsKey(lang)) {
-                      logger.warn("description with language '{}' "
-                              + "already exists", lang);
-                  } else {
-                      logger.debug("description: '{}' '{}'", lang, desc);
-                      descrs.put(lang, desc);
-                  }
-              }
-              if ((descrs != null) && !descrs.containsKey(LANG_EN)) {
-                  throw new SRUConfigException(
-                          "A <Description> with language 'en' is mandatory");
-              }
-          }
+                    if (descrs.containsKey(lang)) {
+                        logger.warn("description with language '{}' " +
+                                "already exists", lang);
+                    } else {
+                        logger.debug("description: '{}' '{}'", lang, desc);
+                        descrs.put(lang, desc);
+                    }
+                }
+                if ((descrs != null) && !descrs.containsKey(LANG_EN)) {
+                    throw new SRUConfigException(
+                            "A <Description> with language 'en' is mandatory");
+                }
+            }
 
-          exp = xpath.compile("ed:LandingPageURI");
-          list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
-          if ((list != null) && (list.getLength() > 0)) {
-              for (int i = 0; i < list.getLength(); i++) {
-                  Element n = (Element) list.item(i);
-                  link = cleanString(n.getTextContent());
-              }
-          }
+            exp = xpath.compile("ed:LandingPageURI");
+            list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
+            if ((list != null) && (list.getLength() > 0)) {
+                for (int i = 0; i < list.getLength(); i++) {
+                    Element n = (Element) list.item(i);
+                    link = cleanString(n.getTextContent());
+                }
+            }
 
-          exp = xpath.compile("ed:Languages/ed:Language");
-          list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
-          if ((list != null) && (list.getLength() > 0)) {
-              for (int i = 0; i < list.getLength(); i++) {
-                  Element n = (Element) list.item(i);
+            exp = xpath.compile("ed:Languages/ed:Language");
+            list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
+            if ((list != null) && (list.getLength() > 0)) {
+                for (int i = 0; i < list.getLength(); i++) {
+                    Element n = (Element) list.item(i);
 
-                  String s = n.getTextContent();
-                  if (s != null) {
-                      s = s.trim();
-                      if (s.isEmpty()) {
-                          s = null;
-                      }
-                  }
+                    String s = n.getTextContent();
+                    if (s != null) {
+                        s = s.trim();
+                        if (s.isEmpty()) {
+                            s = null;
+                        }
+                    }
 
-                  /*
-                   * enforce three letter codes
-                   */
-                  if ((s == null) || (s.length() != 3)) {
-                      throw new SRUConfigException("Element <Language> " +
-                              "must use ISO-639-3 three letter " +
-                              "language codes");
-                  }
+                    /*
+                     * enforce three letter codes
+                     */
+                    if ((s == null) || (s.length() != 3)) {
+                        throw new SRUConfigException("Element <Language> " +
+                                "must use ISO-639-3 three letter " +
+                                "language codes");
+                    }
 
-                  if (langs == null) {
-                      langs = new ArrayList<String>();
-                  }
-                  langs.add(s);
-              }
-          }
+                    if (langs == null) {
+                        langs = new ArrayList<String>();
+                    }
+                    langs.add(s);
+                }
+            }
 
-          exp = xpath.compile("ed:AvailableDataViews");
-          Node n = (Node) exp.evaluate(node, XPathConstants.NODE);
-          if ((n != null) && (n instanceof Element)) {
-              String ref = getAttribute((Element) n, "ref");
-              if (ref == null) {
-                  throw new SRUConfigException("Element <AvailableDataViews> " +
-                          "must have a 'ref' attribute");
-              }
-              String[] refs = ref.split("\\s+");
-              if ((refs == null) || (refs.length < 1)) {
-                  throw new SRUConfigException("Attribute 'ref' on element " +
-                          "<AvailableDataViews> must contain a whitespace " +
-                          "seperated list of data view references");
-              }
+            exp = xpath.compile("ed:AvailableDataViews");
+            Node n = (Node) exp.evaluate(node, XPathConstants.NODE);
+            if ((n != null) && (n instanceof Element)) {
+                String ref = getAttribute((Element) n, "ref");
+                if (ref == null) {
+                    throw new SRUConfigException(
+                            "Element <AvailableDataViews> " +
+                                    "must have a 'ref' attribute");
+                }
+                String[] refs = ref.split("\\s+");
+                if ((refs == null) || (refs.length < 1)) {
+                    throw new SRUConfigException("Attribute 'ref' on element " +
+                            "<AvailableDataViews> must contain a whitespace " +
+                            "seperated list of data view references");
+                }
 
+                for (int i = 0; i < refs.length; i++) {
+                    DataView dataview = null;
+                    for (DataView dv : supportedDataViews) {
+                        if (refs[i].equals(dv.getIdentifier())) {
+                            dataview = dv;
+                            break;
+                        }
+                    }
+                    if (dataview != null) {
+                        if (availableDataViews == null) {
+                            availableDataViews = new ArrayList<DataView>();
+                        }
+                        availableDataViews.add(dataview);
+                    } else {
+                        throw new SRUConfigException(
+                                "A data view with " + "identifier '" + refs[i] +
+                                        "' was not defined " +
+                                        "in <SupportedDataViews>");
+                    }
+                }
+            } else {
+                throw new SRUConfigException(
+                        "missing element <AvailableDataViews>");
+            }
+            if (availableDataViews == null) {
+                throw new SRUConfigException("No available data views where " +
+                        "defined for resource with PID '" + pid + "'");
+            }
 
-              for (int i = 0; i < refs.length; i++) {
-                  DataView dataview = null;
-                  for (DataView dv : supportedDataViews) {
-                      if (refs[i].equals(dv.getIdentifier())) {
-                          dataview = dv;
-                          break;
-                      }
-                  }
-                  if (dataview != null) {
-                      if (availableDataViews == null) {
-                          availableDataViews = new ArrayList<DataView>();
-                      }
-                      availableDataViews.add(dataview);
-                  } else {
-                      throw new SRUConfigException("A data view with " +
-                              "identifier '" + refs[i] + "' was not defined " +
-                              "in <SupportedDataViews>");
-                  }
-              }
-          } else {
-              throw new SRUConfigException(
-                      "missing element <AvailableDataViews>");
-          }
-          if (availableDataViews == null) {
-              throw new SRUConfigException("No available data views where " +
-                      "defined for resource with PID '" + pid + "'");
-          }
+            exp = xpath.compile("ed:AvailableLayers");
+            n = (Node) exp.evaluate(node, XPathConstants.NODE);
+            if ((n != null) && (n instanceof Element)) {
+                String ref = getAttribute((Element) n, "ref");
+                if (ref == null) {
+                    throw new SRUConfigException("Element <AvailableLayers> " +
+                            "must have a 'ref' attribute");
+                }
+                String[] refs = ref.split("\\s+");
+                if ((refs == null) || (refs.length < 1)) {
+                    throw new SRUConfigException("Attribute 'ref' on element " +
+                            "<AvailableLayers> must contain a whitespace " +
+                            "seperated list of data view references");
+                }
 
-          exp = xpath.compile("ed:AvailableLayers");
-          n = (Node) exp.evaluate(node, XPathConstants.NODE);
-          if ((n != null) && (n instanceof Element)) {
-              String ref = getAttribute((Element) n, "ref");
-              if (ref == null) {
-                  throw new SRUConfigException("Element <AvailableLayers> " +
-                          "must have a 'ref' attribute");
-              }
-              String[] refs = ref.split("\\s+");
-              if ((refs == null) || (refs.length < 1)) {
-                  throw new SRUConfigException("Attribute 'ref' on element " +
-                          "<AvailableLayers> must contain a whitespace " +
-                          "seperated list of data view references");
-              }
+                for (int i = 0; i < refs.length; i++) {
+                    Layer layer = null;
+                    for (Layer l : supportedLayers) {
+                        if (refs[i].equals(l.getId())) {
+                            layer = l;
+                            break;
+                        }
+                    }
+                    if (layer != null) {
+                        if (availableLayers == null) {
+                            availableLayers = new ArrayList<Layer>();
+                        }
+                        availableLayers.add(layer);
+                    } else {
+                        throw new SRUConfigException("A layer with " +
+                                "identifier '" + refs[i] +
+                                "' was not defined " + "in <SupportedLayers>");
+                    }
+                }
+            } else {
+                if (hasAdv) {
+                    logger.debug("no <SupportedLayers> for ressource '{}'",
+                            pid);
+                }
+            }
 
+            exp = xpath.compile("ed:Resources/ed:Resource");
+            list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
+            if ((list != null) && (list.getLength() > 0)) {
+                sub = parseResources(xpath, list, pids, supportedDataViews,
+                        supportedLayers, version, hasAdv);
+            }
 
-              for (int i = 0; i < refs.length; i++) {
-                  Layer layer = null;
-                  for (Layer l : supportedLayers) {
-                      if (refs[i].equals(l.getId())) {
-                          layer = l;
-                          break;
-                      }
-                  }
-                  if (layer != null) {
-                      if (availableLayers == null) {
-                          availableLayers = new ArrayList<Layer>();
-                      }
-                      availableLayers.add(layer);
-                  } else {
-                      throw new SRUConfigException("A layer with " +
-                              "identifier '" + refs[i] + "' was not defined " +
-                              "in <SupportedLayers>");
-                  }
-              }
-          } else {
-              if (hasAdv) {
-                  logger.debug("no <SupportedLayers> for ressource '{}'", pid);
-              }
-          }
-
-          exp = xpath.compile("ed:Resources/ed:Resource");
-          list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
-          if ((list != null) && (list.getLength() > 0)) {
-              sub = parseResources(xpath, list, pids,
-                      supportedDataViews, supportedLayers, hasAdv);
-          }
-
-          if (ris == null) {
-              ris = new ArrayList<ResourceInfo>();
-          }
-          ris.add(new ResourceInfo(pid,
-                  titles,
-                  descrs,
-                  link,
-                  langs,
-                  availableDataViews,
-                  availableLayers,
-                  sub));
-      }
-      return ris;
+            if (ris == null) {
+                ris = new ArrayList<ResourceInfo>();
+            }
+            if ((availableLayers != null) && (version < 1)) {
+                logger.warn("Endpoint claims to support FCS 1.0, but " +
+                        "includes information about <AvailableLayers> for " +
+                        "resource with pid '{}'", pid);
+            }
+            ris.add(new ResourceInfo(pid, titles, descrs, link, langs,
+                    availableDataViews, availableLayers, sub));
+        }
+        return ris;
     }
 
 

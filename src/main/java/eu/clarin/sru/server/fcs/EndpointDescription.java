@@ -32,10 +32,20 @@ import eu.clarin.sru.server.SRUException;
  */
 public interface EndpointDescription {
     /**
+     * Constant for endpoint description version number for FCS 1.0
+     */
+    public static final int VERSION_1 = 1;
+    /**
+     * Constant for endpoint description version number for FCS 1.0
+     */
+    public static final int VERSION_2 = 2;
+    
+    /**
      * Constant for a (synthetic) persistent identifier identifying the top-most
      * (= root) resources in the resource inventory.
      */
     public static final String PID_ROOT = "root";
+
 
     /**
      * Destroy the resource info inventory. Use this method for any cleanup the
@@ -45,6 +55,26 @@ public interface EndpointDescription {
     public void destroy();
 
 
+    /**
+     * Get the version number of this endpoint description. <br>
+     * Valid version are 1 for FCS 1.0 and 2 fpr FCS 2.0.
+     * 
+     * @return the version number for this endpoint description
+     */
+    public int getVersion();
+
+
+    /**
+     * Check if this endpoint description is in a certain version.
+     * 
+     * @param version
+     *            the version to check for
+     * 
+     * @return <code>true</code>, if version number matches
+     */
+    public boolean isVersion(int version);
+
+    
     /**
      * Get the list of capabilities supported by this endpoint. The list
      * contains the appropriate URIs defined by the CLARIN-FCS specification to
