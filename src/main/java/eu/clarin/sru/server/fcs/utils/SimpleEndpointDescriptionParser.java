@@ -433,6 +433,10 @@ public class SimpleEndpointDescriptionParser {
             throw new SRUConfigException("No resources where " +
                     "defined in endpoint description");
         }
+        if (logger.isDebugEnabled()) {
+            logger.debug("Dumping ResourceInfo:");
+            dumpResourceInfo(1, resources);
+        }
 
         return new SimpleEndpointDescription(version,
                 capabilities,
@@ -440,6 +444,22 @@ public class SimpleEndpointDescriptionParser {
                 supportedLayers,
                 resources,
                 false);
+    }
+
+
+    private static void dumpResourceInfo(int depth, List<ResourceInfo> ris) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < depth; i++) {
+            sb.append("--");
+        }
+        String pfx = sb.toString();
+        for (ResourceInfo ri : ris) {
+            List<ResourceInfo> sris = ri.getSubResources();
+            logger.debug("{} {} (level={})", pfx, ri.getPid(), depth);
+            if (sris != null) {
+                dumpResourceInfo(depth + 1, sris);
+            }
+        }
     }
 
 
@@ -469,6 +489,7 @@ public class SimpleEndpointDescriptionParser {
                         "with pid '" + pid + "' already exists");
             }
             pids.add(pid);
+            logger.debug("Processing resource with pid '{}'", pid);
 
             XPathExpression exp = xpath.compile("ed:Title");
             NodeList list = (NodeList) exp.evaluate(node,
