@@ -93,6 +93,22 @@ public abstract class QueryNode {
 
 
     /**
+     * Check, if node if of given type.
+     * 
+     * @param nodeType
+     *            type to check against
+     * @return <code>true</code> if node is of given type, <code>false</code>
+     *         otherwise
+     */
+    public boolean hasNodeType(QueryNodeType nodeType) {
+        if (nodeType == null) {
+            throw new NullPointerException("nodeType == null");
+        }
+        return this.nodeType == nodeType;
+    }
+
+
+    /**
      * Get the parent node of this node.
      *
      * @return the parent node or <code>null</code> if this is the root node

@@ -75,12 +75,61 @@ public class Expression extends QueryNode {
 
 
     /**
-     * Get the layer identifier qualifier.
+     * Check if the expression used a given <em>Layer Type Identifier</em>.
      *
-     * @return the layer identifier qualifier or <code>null</code> if none
+     * @param identifier
+     *            the Layer Type Identifier to check against
+     * @return <code>true</code> if this identifier was used, <code>false</code>
+     *         otherwise
+     */
+    public boolean hasLayerIdentifier(String identifier) {
+        if (identifier == null) {
+            throw new NullPointerException("identifier == null");
+        }
+        return this.identifier.equals(identifier);
+    }
+
+
+    /**
+     * Get the Layer Type Identifier qualifier.
+     *
+     * @return the Layer Type Identifier qualifier or <code>null</code> if none
+     *         was used in this expression
      */
     public String getLayerQualifier() {
         return qualifier;
+    }
+
+
+    /**
+     * Check if the Layer Type Identifier qualifier is empty.
+     *
+     * @return <code>true</code> if no Layer Type Identifier qualifier was set,
+     *         <code>false</code> otherwise
+     */
+    public boolean isLayerQualifierEmpty() {
+        return (qualifier == null);
+    }
+
+
+    /**
+     * Check if the expression used a given qualifier for the Layer Type
+     * Identifier.
+     *
+     * @param qualifier
+     *            the qualifier to check against
+     * @return <code>true</code> if this identifier was used, <code>false</code>
+     *         otherwise
+     */
+    public boolean hasLayerQualifier(String qualifier) {
+        if (qualifier == null) {
+            throw new NullPointerException("qualifier == null");
+        }
+        if (this.qualifier != null) {
+            return this.qualifier.equals(qualifier);
+        } else {
+            return false;
+        }
     }
 
 
@@ -91,6 +140,22 @@ public class Expression extends QueryNode {
      */
     public Operator getOperator() {
         return operator;
+    }
+
+
+    /**
+     * Check if expression used a given operator.
+     *
+     * @param operator
+     *            the operator to check
+     * @return <code>true</code> if the given operator was used,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasOperator(Operator operator) {
+        if (operator == null) {
+            throw new NullPointerException("operator == null");
+        }
+        return this.operator == operator;
     }
 
 
@@ -107,10 +172,42 @@ public class Expression extends QueryNode {
     /**
      * Get the regex flags set.
      *
-     * @return the regex flags set or <code>null</code> if none
+     * @return the regex flags set or <code>null</code> if no flags were used
+     *         in this expression
      */
     public Set<RegexFlag> getRegexFlags() {
         return regex_flags;
+    }
+
+
+    /**
+     * Check if a regex flag set is empty.
+     *
+     * @return <code>true</code> if no regex flags where set, <code>false</code>
+     *         otherwise
+     */
+    public boolean isRegexFlagsEmpty() {
+        return (regex_flags == null);
+    }
+
+
+    /**
+     * Check if a regex flag is set.
+     *
+     * @param flag
+     *            the flag to be checked
+     * @return <code>true</code> if the flag is set, <code>false</code>
+     *         otherwise
+     */
+    public boolean hasRegexFlag(RegexFlag flag) {
+        if (flag == null) {
+            throw new NullPointerException("flag == null");
+        }
+        if (regex_flags != null) {
+            return regex_flags.contains(flag);
+        } else {
+            return false;
+        }
     }
 
 
