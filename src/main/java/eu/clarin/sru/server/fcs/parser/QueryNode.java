@@ -25,6 +25,10 @@ import java.util.List;
  *
  */
 public abstract class QueryNode {
+    /**
+     * Atom occurrence it not bound.
+     */
+    public static final int OCCURS_UNBOUNDED = -1;
     protected final QueryNodeType nodeType;
     protected final List<QueryNode> children;
     protected QueryNode parent;

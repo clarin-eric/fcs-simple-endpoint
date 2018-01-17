@@ -69,9 +69,9 @@ import eu.clarin.sru.fcs.qlparser.FCSParser.Within_part_simpleContext;
  */
 public class QueryParser {
     private static final int[] REP_ZERO_OR_MORE =
-            new int[] { 0, Constants.OCCURS_UNBOUNDED };
+            new int[] { 0, QueryNode.OCCURS_UNBOUNDED };
     private static final int[] REP_ONE_OR_MORE =
-            new int[] { 1, Constants.OCCURS_UNBOUNDED };
+            new int[] { 1, QueryNode.OCCURS_UNBOUNDED };
     private static final int[] REP_ZERO_OR_ONE =
             new int[] { 0, 1 };
     private static final String EMPTY_STRING = "";
@@ -727,7 +727,7 @@ public class QueryParser {
         int int1Idx = getChildIndex(ctx, FCSParser.INTEGER, 0);
         int int2Idx = getChildIndex(ctx, FCSParser.INTEGER, int1Idx + 1);
         int min = 0;
-        int max = Constants.OCCURS_UNBOUNDED;
+        int max = QueryNode.OCCURS_UNBOUNDED;
         if (commaIdx != -1) {
             if (int1Idx < commaIdx) {
                 min = parseInteger(ctx.getChild(int1Idx).getText());
@@ -744,7 +744,7 @@ public class QueryParser {
             min = parseInteger(ctx.getChild(int1Idx).getText());
             max = min;
         }
-        if ((max != Constants.OCCURS_UNBOUNDED) && (min > max)) {
+        if ((max != QueryNode.OCCURS_UNBOUNDED) && (min > max)) {
             throw new ExpressionTreeBuilderException(
                     "bad qualifier: min > max (" + min + " > " + max + ")");
         }

@@ -82,7 +82,7 @@ public class QueryGroup extends QueryNode {
             .append(" ");
         if (minOccurs != 1) {
             sb.append("@min=");
-            if (minOccurs == Constants.OCCURS_UNBOUNDED) {
+            if (minOccurs == QueryNode.OCCURS_UNBOUNDED) {
                 sb.append("*");
             } else {
                 sb.append(minOccurs);
@@ -91,7 +91,7 @@ public class QueryGroup extends QueryNode {
         }
         if (maxOccurs != 1) {
             sb.append("@max=");
-            if (maxOccurs == Constants.OCCURS_UNBOUNDED) {
+            if (maxOccurs == QueryNode.OCCURS_UNBOUNDED) {
                 sb.append("*");
             } else {
                 sb.append(maxOccurs);
