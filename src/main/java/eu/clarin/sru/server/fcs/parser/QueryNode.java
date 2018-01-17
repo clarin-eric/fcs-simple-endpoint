@@ -98,7 +98,7 @@ public abstract class QueryNode {
 
     /**
      * Check, if node if of given type.
-     * 
+     *
      * @param nodeType
      *            type to check against
      * @return <code>true</code> if node is of given type, <code>false</code>
