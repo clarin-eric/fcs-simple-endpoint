@@ -51,6 +51,20 @@ public final class Constants {
     public static final String FCS_QUERY_TYPE_SEARCH_TERMS =
             SRUConstants.SRU_QUERY_TYPE_SEARCH_TERMS;
 
+    /** constant Layer Type identifier for default "text" layer */
+    public static final String FCS_LAYER_TYPE_TEXT = "text";
+    /** constant Layer Type identifier for default "lemma" layer */
+    public static final String FCS_LAYER_TYPE_LEMMA = "lemma";
+    /** constant Layer Type identifier for default "pos" layer */
+    public static final String FCS_LAYER_TYPE_POS = "pos";
+    /** constant Layer Type identifier for default "orth" layer */
+    public static final String FCS_LAYER_TYPE_ORTH = "orth";
+    /** constant Layer Type identifier for default "norm" layer */
+    public static final String FCS_LAYER_TYPE_NORM = "norm";
+    /** constant Layer Type identifier for default "phonetic" layer */
+    public static final String FCS_LAYER_TYPE_PHONETIC = "phonetic";
+
+    
     /* hide constructor */
     private Constants() {
     }
