@@ -39,7 +39,7 @@ public class QuerySequence extends QueryNode {
     public void accept(QueryVisitor visitor) {
         if (!children.isEmpty()) {
             for (QueryNode child : children) {
-                visitAnyNode(visitor, child);
+                child.accept(visitor);
             }
         }
         visitor.visit(this);

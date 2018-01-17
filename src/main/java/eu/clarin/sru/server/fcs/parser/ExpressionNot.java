@@ -46,7 +46,7 @@ public class ExpressionNot extends QueryNode {
 
     @Override
     public void accept(QueryVisitor visitor) {
-        visitAnyNode(visitor, children.get(0));
+        children.get(0).accept(visitor);
         visitor.visit(this);
     }
 

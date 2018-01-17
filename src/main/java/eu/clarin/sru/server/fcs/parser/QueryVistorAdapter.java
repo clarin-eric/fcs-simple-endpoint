@@ -24,62 +24,62 @@ package eu.clarin.sru.server.fcs.parser;
 public class QueryVistorAdapter implements QueryVisitor {
 
     @Override
-    public void visit(QuerySegment querySegment) {
+    public void visit(QuerySegment node) {
     }
 
 
     @Override
-    public void visit(QueryGroup queryGroup) {
+    public void visit(QueryGroup node) {
     }
 
 
     @Override
-    public void visit(QuerySequence querySequence) {
+    public void visit(QuerySequence node) {
     }
 
 
     @Override
-    public void visit(QueryDisjunction queryDisjunction) {
+    public void visit(QueryDisjunction node) {
     }
 
 
     @Override
-    public void visit(QueryWithWithin queryWithWithin) {
+    public void visit(QueryWithWithin node) {
     }
 
 
     @Override
-    public void visit(Expression expressionBasic) {
+    public void visit(Expression node) {
     }
 
 
     @Override
-    public void visit(ExpressionWildcard expressionWildcard) {
+    public void visit(ExpressionWildcard node) {
     }
 
 
     @Override
-    public void visit(ExpressionGroup expressionGroup) {
+    public void visit(ExpressionGroup node) {
     }
 
 
     @Override
-    public void visit(ExpressionOr expressionOr) {
+    public void visit(ExpressionOr node) {
     }
 
 
     @Override
-    public void visit(ExpressionAnd expressionAnd) {
+    public void visit(ExpressionAnd node) {
     }
 
 
     @Override
-    public void visit(ExpressionNot expressionNot) {
+    public void visit(ExpressionNot node) {
     }
 
 
     @Override
-    public void visit(SimpleWithin simpleWithin) {
+    public void visit(SimpleWithin node) {
     }
 
 } // class QueryVistorAdapter

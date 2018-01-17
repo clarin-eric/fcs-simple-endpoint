@@ -228,34 +228,4 @@ public abstract class QueryNode {
         this.parent = parent;
     }
 
-
-    protected final void visitAnyNode(QueryVisitor vistor, QueryNode node) {
-        if (node instanceof QueryDisjunction) {
-            vistor.visit((QueryDisjunction) node);
-        } else if (node instanceof QueryGroup) {
-            vistor.visit((QueryGroup) node);
-        } else if (node instanceof QuerySegment) {
-            vistor.visit((QuerySegment) node);
-        } else if (node instanceof QuerySequence) {
-            vistor.visit((QuerySequence) node);
-        } else if (node instanceof ExpressionAnd) {
-            vistor.visit((ExpressionAnd) node);
-        } else if (node instanceof Expression) {
-            vistor.visit((Expression) node);
-        } else if (node instanceof ExpressionGroup) {
-            vistor.visit((ExpressionGroup) node);
-        } else if (node instanceof ExpressionNot) {
-            vistor.visit((ExpressionNot) node);
-        } else if (node instanceof ExpressionOr) {
-            vistor.visit((ExpressionOr) node);
-        } else if (node instanceof ExpressionWildcard) {
-            vistor.visit((ExpressionWildcard) node);
-        } else if (node instanceof SimpleWithin) {
-            vistor.visit((SimpleWithin) node);
-        } else {
-            throw new RuntimeException("unexpected node type: "  +
-                    node.getNodeType());
-        }
-    }
-
 } // abstract class QueryNode

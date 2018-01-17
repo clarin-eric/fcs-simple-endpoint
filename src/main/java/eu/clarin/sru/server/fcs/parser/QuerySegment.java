@@ -107,6 +107,7 @@ public class QuerySegment extends QueryNode {
 
     @Override
     public void accept(QueryVisitor visitor) {
+        children.get(0).accept(visitor);
         visitor.visit(this);
     }
 

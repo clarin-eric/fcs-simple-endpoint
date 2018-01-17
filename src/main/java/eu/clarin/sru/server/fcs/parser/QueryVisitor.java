@@ -24,108 +24,108 @@ public interface QueryVisitor {
     /**
      * Visit a <em>segment</em> query node.
      *
-     * @param querySegment
+     * @param node
      *            the node to visit
      */
-    public void visit(QuerySegment querySegment);
+    public void visit(QuerySegment node);
 
 
     /**
      * Visit a <em>group</em> query node.
      *
-     * @param queryGroup
+     * @param node
      *            the node to visit
      */
-    public void visit(QueryGroup queryGroup);
+    public void visit(QueryGroup node);
 
 
     /**
      * Visit a <em>sequence</em> query node.
      *
-     * @param querySequence
+     * @param node
      *            the node to visit
      */
-    public void visit(QuerySequence querySequence);
+    public void visit(QuerySequence node);
 
 
     /**
      * Visit a <em>or</em> query node.
      *
-     * @param queryDisjunction
+     * @param node
      *            the node to visit
      */
-    public void visit(QueryDisjunction queryDisjunction);
+    public void visit(QueryDisjunction node);
 
 
     /**
      * Visit a <em>query</em> with within node.
      *
-     * @param queryWithWithin
+     * @param node
      *            the node to visit
      */
-    public void visit(QueryWithWithin queryWithWithin);
+    public void visit(QueryWithWithin node);
 
 
     /**
      * Visit a <em>simple</em> expression node.
      *
-     * @param expression
+     * @param node
      *            the node to visit
      */
-    public void visit(Expression expression);
+    public void visit(Expression node);
 
 
     /**
      * Visit a <em>wildcard</em> expression node.
      *
-     * @param expressionWildcard
+     * @param node
      *            the node to visit
      */
-    public void visit(ExpressionWildcard expressionWildcard);
+    public void visit(ExpressionWildcard node);
 
 
     /**
      * Visit a <em>group</em> expression node.
      *
-     * @param expressionGroup
+     * @param node
      *            the node to visit
      */
-    public void visit(ExpressionGroup expressionGroup);
+    public void visit(ExpressionGroup node);
 
 
     /**
      * Visit a <em>or</em> expression node.
      *
-     * @param expressionOr
+     * @param node
      *            the node to visit
      */
-    public void visit(ExpressionOr expressionOr);
+    public void visit(ExpressionOr node);
 
 
     /**
      * Visit a <em>and</em> expression node.
      *
-     * @param expressionAnd
+     * @param node
      *            the node to visit
      */
-    public void visit(ExpressionAnd expressionAnd);
+    public void visit(ExpressionAnd node);
 
 
     /**
      * Visit a <em>not</em> expression node.
      *
-     * @param expressionNot
+     * @param node
      *            the node to visit
      */
-    public void visit(ExpressionNot expressionNot);
+    public void visit(ExpressionNot node);
 
 
     /**
      * Visit a <em>simple within</em> node.
      *
-     * @param simpleWithin
+     * @param node
      *            the node to visit
      */
-    public void visit(SimpleWithin simpleWithin);
+    public void visit(SimpleWithin node);
 
 } // interface QueryVisitor

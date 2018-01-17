@@ -59,9 +59,11 @@ public class QueryWithWithin extends QueryNode {
 
     @Override
     public void accept(QueryVisitor visitor) {
-        visitAnyNode(visitor, children.get(0));
+        children.get(0).accept(visitor);
+//        visitAnyNode(visitor, children.get(0));
         if (children.size() > 1) {
-            visitAnyNode(visitor, children.get(1));
+//            visitAnyNode(visitor, children.get(1));
+            children.get(1).accept(visitor);
         }
         visitor.visit(this);
     }
