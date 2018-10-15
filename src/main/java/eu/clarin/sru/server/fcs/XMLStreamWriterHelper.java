@@ -31,21 +31,21 @@ import javax.xml.stream.XMLStreamWriter;
  *      CLARIN FCS specification, section "Operation searchRetrieve"</a>
  */
 public class XMLStreamWriterHelper {
-    private static final String FCS_NS          =
+    protected static final String FCS_NS          =
             "http://clarin.eu/fcs/resource";
-    private static final String FCS_PREFIX      =
+    protected static final String FCS_PREFIX      =
             "fcs";
-    private static final String FCS_KWIC_NS     =
+    protected static final String FCS_KWIC_NS     =
             "http://clarin.eu/fcs/1.0/kwic";
-    private static final String FCS_KWIC_PREFIX =
+    protected static final String FCS_KWIC_PREFIX =
             "kwic";
-    private static final String FCS_KWIC_MIMETYPE =
+    protected static final String FCS_KWIC_MIMETYPE =
             "application/x-clarin-fcs-kwic+xml";
-    private static final String FCS_HITS_NS =
+    protected static final String FCS_HITS_NS =
             "http://clarin.eu/fcs/dataview/hits";
-    private static final String FCS_HITS_PREFIX =
+    protected static final String FCS_HITS_PREFIX =
             "hits";
-    private static final String FCS_HITS_MIMETYPE =
+    protected static final String FCS_HITS_MIMETYPE =
             "application/x-clarin-fcs-hits+xml";
 
 
