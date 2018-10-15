@@ -416,11 +416,12 @@ public class SimpleEndpointDescriptionParser {
 
         if ((supportedLayers != null) &&
                 !capabilities.contains(CAP_ADVANCED_SEARCH)) {
-                logger.warn("capability '{}' was not defined in endpoint " +
-                        "description; added it to meet specification. Please " +
-                        "update your endpoint description!", CAP_ADVANCED_SEARCH);
-                capabilities.add(CAP_ADVANCED_SEARCH);
-        }
+                logger.warn("Endpoint description has <SupportedLayer> but " +
+                        "does not indicate support for Advanced Search. " +
+                        "Please consider adding capability ({}) to " +
+                        "your endpoint description to make use of layers!",
+                        CAP_ADVANCED_SEARCH);
+        } // necessary
         logger.debug("L: {}", supportedLayers);
 
         // resources
