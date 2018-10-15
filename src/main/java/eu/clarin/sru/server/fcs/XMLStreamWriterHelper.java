@@ -229,7 +229,7 @@ public class XMLStreamWriterHelper {
      *            applicable
      * @throws XMLStreamException
      *             if an error occurred
-     * @deprecated The the HITS data view instead.
+     * @deprecated Use the HITS data view instead.
      */
     @Deprecated
     public static void writeKWICDataView(XMLStreamWriter writer, String left,
