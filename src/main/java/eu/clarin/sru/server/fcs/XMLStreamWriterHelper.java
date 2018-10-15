@@ -30,7 +30,7 @@ import javax.xml.stream.XMLStreamWriter;
  *      href="https://trac.clarin.eu/wiki/FCS/Specification">
  *      CLARIN FCS specification, section "Operation searchRetrieve"</a>
  */
-public final class XMLStreamWriterHelper {
+public class XMLStreamWriterHelper {
     private static final String FCS_NS          =
             "http://clarin.eu/fcs/resource";
     private static final String FCS_PREFIX      =
