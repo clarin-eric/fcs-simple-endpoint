@@ -404,8 +404,6 @@ public class SimpleEndpointDescriptionParser {
                     }
                 }
 
-
-
                 if (supportedLayers == null) {
                     supportedLayers = new ArrayList<Layer>(list.getLength());
                 }
