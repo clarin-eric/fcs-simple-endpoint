@@ -21,7 +21,7 @@ package eu.clarin.sru.server.fcs.parser;
  * Convenience class to implement FCS-QL expression tree visitors. Default
  * method implementations do nothing.
  */
-public class QueryVistorAdapter implements QueryVisitor {
+public class QueryVistiorAdapter implements QueryVisitor {
 
     @Override
     public void visit(QuerySegment node) {
