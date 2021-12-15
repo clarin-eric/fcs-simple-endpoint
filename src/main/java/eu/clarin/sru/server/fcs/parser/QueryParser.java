@@ -27,6 +27,8 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
@@ -137,7 +139,8 @@ public class QueryParser {
     public QueryNode parse(String query) throws QueryParserException {
         final ErrorListener errorListener = new ErrorListener(query);
         try {
-            ANTLRInputStream input = new ANTLRInputStream(query);
+//            ANTLRInputStream input = new ANTLRInputStream(query);
+            CharStream input = CharStreams.fromString(query);
             FCSLexer lexer = new FCSLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             FCSParser parser = new FCSParser(tokens);
