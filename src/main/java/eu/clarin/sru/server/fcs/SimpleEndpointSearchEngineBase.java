@@ -16,9 +16,12 @@
  */
 package eu.clarin.sru.server.fcs;
 
+import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletContext;
 import javax.xml.XMLConstants;
@@ -29,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.z3950.zing.cql.CQLNode;
 import org.z3950.zing.cql.CQLTermNode;
+
+import eu.clarin.sru.server.SRUAuthenticationInfoProvider;
 import eu.clarin.sru.server.SRUConfigException;
 import eu.clarin.sru.server.SRUConstants;
 import eu.clarin.sru.server.SRUDiagnosticList;
@@ -40,6 +45,8 @@ import eu.clarin.sru.server.SRUScanResultSet;
 import eu.clarin.sru.server.SRUSearchEngine;
 import eu.clarin.sru.server.SRUServer;
 import eu.clarin.sru.server.SRUServerConfig;
+import eu.clarin.sru.server.fcs.utils.AuthenticationProvider;
+import eu.clarin.sru.server.utils.SRUAuthenticationInfoProviderFactory;
 import eu.clarin.sru.server.utils.SRUSearchEngineBase;
 
 
@@ -49,7 +56,22 @@ import eu.clarin.sru.server.utils.SRUSearchEngineBase;
  *
  */
 public abstract class SimpleEndpointSearchEngineBase extends
-        SRUSearchEngineBase {
+        SRUSearchEngineBase implements SRUAuthenticationInfoProviderFactory {
+    public static final String FCS_AUTHENTICATION_ENABLE_PARAM =
+            "eu.clarin.sru.server.fcs.authentication.enable";
+    public static final String FCS_AUTHENTICATION_AUDIENCE_PARAM =
+            "eu.clarin.sru.server.fcs.authentication.audience";
+    public static final String FCS_AUTHENTICATION_IGNORE_ISSUEDAT_PARAM =
+            "eu.clarin.sru.server.fcs.authentication.ignoreIssuedAt";
+    public static final String FCS_AUTHENTICATION_ACCEPT_ISSUEDAT_PARAM =
+            "eu.clarin.sru.server.fcs.authentication.acceptIssuedAt";
+    public static final String FCS_AUTHENTICATION_ACCEPT_EXPIRESAT_PARAM =
+            "eu.clarin.sru.server.fcs.authentication.acceptExpiresAt";
+    public static final String FCS_AUTHENTICATION_ACCEPT_NOTBEFORE_PARAM =
+            "eu.clarin.sru.server.fcs.authentication.acceptNotBefore";
+    public static final String FCS_AUTHENTICATION_PUBLIC_KEY_PARAM_PREFIX =
+            "eu.clarin.sru.server.fcs.authentication.key.";
+    private static final String RESOURCE_URI_PREFIX = "resource:";
     private static final String X_FCS_ENDPOINT_DESCRIPTION =
             "x-fcs-endpoint-description";
     private static final String ED_NS =
@@ -107,6 +129,91 @@ public abstract class SimpleEndpointSearchEngineBase extends
         logger.debug("performing cleanup of search engine");
         doDestroy();
         super.destroy();
+    }
+
+
+    @Override
+    public SRUAuthenticationInfoProvider createAuthenticationInfoProvider(
+            ServletContext context, Map<String, String> params)
+            throws SRUConfigException {
+        String enableAuthentication = params.get(FCS_AUTHENTICATION_ENABLE_PARAM);
+        if (enableAuthentication != null) {
+            if (parseBoolean(enableAuthentication)) {
+                logger.debug("enabling authentication");                
+                AuthenticationProvider.Builder builder =
+                        AuthenticationProvider.Builder.create();
+                
+                String audience = params.get(FCS_AUTHENTICATION_AUDIENCE_PARAM);
+                if (audience != null) {
+                    String[] values = audience.split("\\s*,\\s*");
+                    if (values != null) {
+                        for (String value : values) {
+                            logger.debug("adding audience: {}", value);
+                            builder.withAudience(value);
+                        }
+                    } else {
+                        logger.debug("adding audience: {}", audience);
+                        builder.withAudience(audience);
+                    }
+                }
+                
+                boolean ignoreIssuedAt = parseBoolean(
+                        params.get(FCS_AUTHENTICATION_IGNORE_ISSUEDAT_PARAM));
+                if (ignoreIssuedAt) {
+                    logger.debug("will not verify 'iat' claim");
+                    builder.withIgnoreIssuedAt();
+                } else {
+                    long issuedAtLeeway = parseLong(
+                            params.get(FCS_AUTHENTICATION_ACCEPT_ISSUEDAT_PARAM), -1);
+                    if (issuedAtLeeway > 0) {
+                        logger.debug("allowing {} seconds leeway for 'iat' claim", issuedAtLeeway);
+                        builder.withIssuedAt(issuedAtLeeway);
+                    }
+                }
+                long expiresAtLeeway = parseLong(
+                        params.get(FCS_AUTHENTICATION_ACCEPT_EXPIRESAT_PARAM), -1);
+                if (expiresAtLeeway > 0) {
+                    logger.debug("allowing {} seconds leeway for 'exp' claim", expiresAtLeeway);
+                    builder.withExpiresAt(expiresAtLeeway);
+                }
+                
+                long notBeforeLeeway = parseLong(
+                        params.get(FCS_AUTHENTICATION_ACCEPT_NOTBEFORE_PARAM), -1);
+                if (notBeforeLeeway > 0) {
+                    logger.debug("allowing {} seconds leeway for 'nbf' claim", expiresAtLeeway);
+                    builder.withNotBefore(notBeforeLeeway);
+                }
+
+                // load keys
+                for (Entry<String, String> entry : params.entrySet()) {
+                    if (entry.getKey().startsWith(FCS_AUTHENTICATION_PUBLIC_KEY_PARAM_PREFIX)) {
+                        String keyId = entry.getKey().substring(FCS_AUTHENTICATION_PUBLIC_KEY_PARAM_PREFIX.length()).trim();
+                        if (keyId.isEmpty()) {
+                            throw new SRUConfigException("init-parameter: '" + entry.getKey() + "' is invalid: keyId is empty!");
+                        }
+                        String keyFileName = entry.getValue();
+                        logger.debug("keyId = {}, keyFile = {}", keyId, keyFileName);
+                        if (keyFileName.regionMatches(0, RESOURCE_URI_PREFIX, 0, RESOURCE_URI_PREFIX.length())) {
+                            String path = keyFileName.substring(RESOURCE_URI_PREFIX.length());
+                            logger.debug("loading key '{}' from resource '{}'", keyId, keyFileName);
+                            InputStream in = context.getResourceAsStream(path);
+                            builder.withPublicKey(keyId, in);
+                        } else {
+                            logger.debug("loading key '{}' from file '{}'", keyId, keyFileName);
+                            builder.withPublicKey(keyId, new File(keyFileName));
+                        }
+                    }
+                }
+                AuthenticationProvider authenticationProvider = builder.build();
+                if (authenticationProvider.getKeyCount() == 0) {
+                    logger.warn("No keys configured, all well-formed tokens will be accepted. Make sure, youn know what you are doing!");
+                }
+                return authenticationProvider;
+            } else {
+                logger.debug("explictly disable authentication");
+            }
+        }
+        return null;
     }
 
 
@@ -250,6 +357,18 @@ public abstract class SimpleEndpointSearchEngineBase extends
     }
 
 
+    private long parseLong(String value, long defaultValue) throws SRUConfigException {
+        if (value != null) {
+            try {
+                return Long.parseLong(value);
+            } catch (NumberFormatException e) {
+                throw new SRUConfigException("invalid long value");
+            }
+        }
+        return defaultValue;
+    }
+    
+    
     private void writeEndpointDescription(XMLStreamWriter writer)
             throws XMLStreamException {
         writer.setPrefix(ED_PREFIX, ED_NS);
