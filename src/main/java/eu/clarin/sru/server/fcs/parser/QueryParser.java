@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -139,7 +138,6 @@ public class QueryParser {
     public QueryNode parse(String query) throws QueryParserException {
         final ErrorListener errorListener = new ErrorListener(query);
         try {
-//            ANTLRInputStream input = new ANTLRInputStream(query);
             CharStream input = CharStreams.fromString(query);
             FCSLexer lexer = new FCSLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
