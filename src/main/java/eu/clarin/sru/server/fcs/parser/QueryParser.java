@@ -40,7 +40,6 @@ import org.slf4j.LoggerFactory;
 
 import eu.clarin.sru.fcs.qlparser.FCSLexer;
 import eu.clarin.sru.fcs.qlparser.FCSParser;
-import eu.clarin.sru.fcs.qlparser.FCSParserBaseVisitor;
 import eu.clarin.sru.fcs.qlparser.FCSParser.AttributeContext;
 import eu.clarin.sru.fcs.qlparser.FCSParser.Expression_andContext;
 import eu.clarin.sru.fcs.qlparser.FCSParser.Expression_basicContext;
@@ -63,6 +62,7 @@ import eu.clarin.sru.fcs.qlparser.FCSParser.Regexp_flagContext;
 import eu.clarin.sru.fcs.qlparser.FCSParser.Regexp_patternContext;
 import eu.clarin.sru.fcs.qlparser.FCSParser.Within_partContext;
 import eu.clarin.sru.fcs.qlparser.FCSParser.Within_part_simpleContext;
+import eu.clarin.sru.fcs.qlparser.FCSParserBaseVisitor;
 
 
 /**
@@ -208,7 +208,7 @@ public class QueryParser {
             if (initStackSize < 1) {
                 throw new IllegalArgumentException("initStackSize < 1");
             }
-            this.stack = new ArrayDeque<Object>(initStackSize);
+            this.stack = new ArrayDeque<>(initStackSize);
         }
 
 
@@ -225,7 +225,7 @@ public class QueryParser {
             Within_partContext w_ctx = ctx.getChild(Within_partContext.class, 0);
             if (w_ctx != null) {
                 QueryNode within = (QueryNode) stack.pop();
-                QueryNode query  = (QueryNode) stack.pop();;
+                QueryNode query  = (QueryNode) stack.pop();
                 stack.push(new QueryWithWithin(query, within));
             }
             if (logger.isTraceEnabled()) {
@@ -262,7 +262,7 @@ public class QueryParser {
             final int pos = stack.size();
             super.visitQuery_disjunction(ctx);
             if (stack.size() > pos) {
-                List<QueryNode> items = new ArrayList<QueryNode>();
+                List<QueryNode> items = new ArrayList<>();
                 while (stack.size() > pos) {
                     items.add(0, (QueryNode) stack.pop());
                 }
@@ -290,7 +290,7 @@ public class QueryParser {
             final int pos = stack.size();
             super.visitQuery_sequence(ctx);
             if (stack.size() > pos) {
-                List<QueryNode> items = new ArrayList<QueryNode>();
+                List<QueryNode> items = new ArrayList<>();
                 while (stack.size() > pos) {
                     items.add(0, (QueryNode) stack.pop());
                 }
@@ -517,7 +517,7 @@ public class QueryParser {
             final int pos = stack.size();
             super.visitExpression_or(ctx);
             if (stack.size() > pos) {
-                final List<QueryNode> children = new ArrayList<QueryNode>();
+                final List<QueryNode> children = new ArrayList<>();
                 while (stack.size() > pos) {
                     children.add(0, (QueryNode) stack.pop());
                 }
@@ -544,7 +544,7 @@ public class QueryParser {
             final int pos = stack.size();
             super.visitExpression_and(ctx);
             if (stack.size() > pos) {
-                final List<QueryNode> children = new ArrayList<QueryNode>();
+                final List<QueryNode> children = new ArrayList<>();
                 while (stack.size() > pos) {
                     children.add(0, (QueryNode) stack.pop());
                 }
@@ -614,7 +614,7 @@ public class QueryParser {
             if (f_ctx != null) {
                 final String s = f_ctx.getText();
 
-                Set<RegexFlag> flags = new HashSet<RegexFlag>();
+                Set<RegexFlag> flags = new HashSet<>();
                 for (int i = 0; i < s.length(); i++) {
                     switch (s.charAt(i)) {
                     case 'i':
@@ -989,7 +989,7 @@ public class QueryParser {
                 Object offendingSymbol, int line, int charPositionInLine,
                 String msg, RecognitionException e) {
             if (errors == null) {
-                errors = new ArrayList<String>();
+                errors = new ArrayList<>();
             }
 
             /*

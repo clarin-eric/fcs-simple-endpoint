@@ -184,7 +184,7 @@ public class SimpleEndpointDescriptionParser {
         logger.debug("endpoint description version is {}", version);
 
         // capabilities
-        List<URI> capabilities = new ArrayList<URI>();
+        List<URI> capabilities = new ArrayList<>();
         exp = xpath.compile("//ed:Capabilities/ed:Capability");
         NodeList list =
                 (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
@@ -224,10 +224,10 @@ public class SimpleEndpointDescriptionParser {
         logger.debug("CAPS:'{}'", capabilities);
 
         // used to check for uniqueness of id attribute
-        final Set<String> xml_ids = new HashSet<String>();
+        final Set<String> xml_ids = new HashSet<>();
 
         // supported data views
-        List<DataView> supportedDataViews = new ArrayList<DataView>();
+        List<DataView> supportedDataViews = new ArrayList<>();
         exp = xpath.compile("//ed:SupportedDataViews/ed:SupportedDataView");
         list = (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
         if ((list != null) && (list.getLength() > 0)) {
@@ -405,7 +405,7 @@ public class SimpleEndpointDescriptionParser {
                 }
 
                 if (supportedLayers == null) {
-                    supportedLayers = new ArrayList<Layer>(list.getLength());
+                    supportedLayers = new ArrayList<>(list.getLength());
                 }
                 supportedLayers.add(new Layer(id, resultId, type, encoding,
                         qualifier, altValueInfo, altValueInfoURI));
@@ -425,7 +425,7 @@ public class SimpleEndpointDescriptionParser {
         // resources
         exp = xpath.compile("/ed:EndpointDescription/ed:Resources/ed:Resource");
         list = (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
-        final Set<String> pids = new HashSet<String>();
+        final Set<String> pids = new HashSet<>();
         List<ResourceInfo> resources = parseResources(xpath, list, pids,
                 supportedDataViews, supportedLayers, version, hasAdvView);
         if ((resources == null) || resources.isEmpty()) {
@@ -510,7 +510,7 @@ public class SimpleEndpointDescriptionParser {
                     }
 
                     if (titles == null) {
-                        titles = new HashMap<String, String>();
+                        titles = new HashMap<>();
                     }
                     if (titles.containsKey(lang)) {
                         logger.warn("title with language '{}' already exists",
@@ -541,7 +541,7 @@ public class SimpleEndpointDescriptionParser {
                     String desc = cleanString(n.getTextContent());
 
                     if (descrs == null) {
-                        descrs = new HashMap<String, String>();
+                        descrs = new HashMap<>();
                     }
 
                     if (descrs.containsKey(lang)) {
@@ -591,7 +591,7 @@ public class SimpleEndpointDescriptionParser {
                     }
 
                     if (langs == null) {
-                        langs = new ArrayList<String>();
+                        langs = new ArrayList<>();
                     }
                     langs.add(s);
                 }
@@ -613,22 +613,22 @@ public class SimpleEndpointDescriptionParser {
                             "seperated list of data view references");
                 }
 
-                for (int i = 0; i < refs.length; i++) {
+                for (String ref2 : refs) {
                     DataView dataview = null;
                     for (DataView dv : supportedDataViews) {
-                        if (refs[i].equals(dv.getIdentifier())) {
+                        if (ref2.equals(dv.getIdentifier())) {
                             dataview = dv;
                             break;
                         }
                     }
                     if (dataview != null) {
                         if (availableDataViews == null) {
-                            availableDataViews = new ArrayList<DataView>();
+                            availableDataViews = new ArrayList<>();
                         }
                         availableDataViews.add(dataview);
                     } else {
                         throw new SRUConfigException(
-                                "A data view with " + "identifier '" + refs[i] +
+                                "A data view with " + "identifier '" + ref2 +
                                         "' was not defined " +
                                         "in <SupportedDataViews>");
                     }
@@ -657,22 +657,22 @@ public class SimpleEndpointDescriptionParser {
                             "seperated list of data view references");
                 }
 
-                for (int i = 0; i < refs.length; i++) {
+                for (String ref2 : refs) {
                     Layer layer = null;
                     for (Layer l : supportedLayers) {
-                        if (refs[i].equals(l.getId())) {
+                        if (ref2.equals(l.getId())) {
                             layer = l;
                             break;
                         }
                     }
                     if (layer != null) {
                         if (availableLayers == null) {
-                            availableLayers = new ArrayList<Layer>();
+                            availableLayers = new ArrayList<>();
                         }
                         availableLayers.add(layer);
                     } else {
                         throw new SRUConfigException("A layer with " +
-                                "identifier '" + refs[i] +
+                                "identifier '" + ref2 +
                                 "' was not defined " + "in <SupportedLayers>");
                     }
                 }
@@ -691,7 +691,7 @@ public class SimpleEndpointDescriptionParser {
             }
 
             if (ris == null) {
-                ris = new ArrayList<ResourceInfo>();
+                ris = new ArrayList<>();
             }
             if ((availableLayers != null) && (version < 1)) {
                 logger.warn("Endpoint claims to support FCS 1.0, but " +

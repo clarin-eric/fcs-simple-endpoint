@@ -48,8 +48,8 @@ public class AdvancedDataViewWriter {
     private static final String FCS_HITS_NS =
             "http://clarin.eu/fcs/dataview/hits";
     private final Unit unit;
-    private final List<Segment> segments = new ArrayList<Segment>();
-    private final Map<URI, List<Span>> layers = new HashMap<URI, List<Span>>();
+    private final List<Segment> segments = new ArrayList<>();
+    private final Map<URI, List<Span>> layers = new HashMap<>();
     private long nextSegmentId = INITIAL_SEGMENT_ID;
 
 
@@ -188,7 +188,7 @@ public class AdvancedDataViewWriter {
         // find layer or create a new one
         List<Span> layer = layers.get(layerId);
         if (layer == null) {
-            layer = new ArrayList<Span>();
+            layer = new ArrayList<>();
             layers.put(layerId, layer);
         }
 

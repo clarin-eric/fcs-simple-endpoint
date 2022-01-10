@@ -139,10 +139,10 @@ public abstract class SimpleEndpointSearchEngineBase extends
         String enableAuthentication = params.get(FCS_AUTHENTICATION_ENABLE_PARAM);
         if (enableAuthentication != null) {
             if (parseBoolean(enableAuthentication)) {
-                logger.debug("enabling authentication");                
+                logger.debug("enabling authentication");
                 AuthenticationProvider.Builder builder =
                         AuthenticationProvider.Builder.create();
-                
+
                 String audience = params.get(FCS_AUTHENTICATION_AUDIENCE_PARAM);
                 if (audience != null) {
                     String[] values = audience.split("\\s*,\\s*");
@@ -156,7 +156,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
                         builder.withAudience(audience);
                     }
                 }
-                
+
                 boolean ignoreIssuedAt = parseBoolean(
                         params.get(FCS_AUTHENTICATION_IGNORE_ISSUEDAT_PARAM));
                 if (ignoreIssuedAt) {
@@ -176,7 +176,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
                     logger.debug("allowing {} seconds leeway for 'exp' claim", expiresAtLeeway);
                     builder.withExpiresAt(expiresAtLeeway);
                 }
-                
+
                 long notBeforeLeeway = parseLong(
                         params.get(FCS_AUTHENTICATION_ACCEPT_NOTBEFORE_PARAM), -1);
                 if (notBeforeLeeway > 0) {
@@ -367,8 +367,8 @@ public abstract class SimpleEndpointSearchEngineBase extends
         }
         return defaultValue;
     }
-    
-    
+
+
     private void writeEndpointDescription(XMLStreamWriter writer)
             throws XMLStreamException {
         writer.setPrefix(ED_PREFIX, ED_NS);

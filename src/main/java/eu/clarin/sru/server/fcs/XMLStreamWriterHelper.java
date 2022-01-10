@@ -445,7 +445,7 @@ public class XMLStreamWriterHelper {
             throw new NullPointerException("text == null");
         }
         if (hits == null) {
-            throw new NullPointerException("text == null");
+            throw new NullPointerException("hits == null");
         }
         if ((hits.length == 0) || ((hits.length % 2) != 0)) {
             throw new NullPointerException("length of hits array must " +
