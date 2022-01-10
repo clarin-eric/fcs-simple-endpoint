@@ -11,6 +11,10 @@
     <description>
         A simple CLARIN FCS endpoint implementation to ease the development of CLARIN FCS endpoints.
     </description>
+    <organization>
+        <name>Leibniz-Institut für Deutsche Sprache</name>
+        <url>http://www.ids-mannheim.de/</url>
+    </organization>
 
     <properties>
         <!-- project settings -->
