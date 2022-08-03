@@ -968,7 +968,7 @@ public class QueryParser {
              * illegal HEX characters
              */
             throw new ExpressionTreeBuilderException(
-                    "invalud hex character: " +
+                    "invalid hex character: " +
                             new String(Character.toChars(c)));
         }
     }
