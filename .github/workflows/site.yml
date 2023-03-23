@@ -31,6 +31,12 @@ jobs:
           java-version: 11
           distribution: 'temurin'
           cache: 'maven'
+          
+      - name: 'Build dependency: fcs-sru-server@main'
+        run: |
+          git clone --depth 1 https://github.com/clarin-eric/fcs-sru-server.git
+          cd fcs-sru-server/
+          mvn -B install
 
       - name: Generate site (project info and javadoc)
         run: mvn -B clean site
