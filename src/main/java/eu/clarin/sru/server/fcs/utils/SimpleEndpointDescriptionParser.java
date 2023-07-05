@@ -638,7 +638,7 @@ public class SimpleEndpointDescriptionParser {
                         "missing element <AvailableDataViews>");
             }
             if (availableDataViews == null) {
-                throw new SRUConfigException("No available data views where " +
+                throw new SRUConfigException("No available data views were " +
                         "defined for resource with PID '" + pid + "'");
             }
 
@@ -678,7 +678,7 @@ public class SimpleEndpointDescriptionParser {
                 }
             } else {
                 if (hasAdv) {
-                    logger.debug("no <SupportedLayers> for ressource '{}'",
+                    logger.debug("no <SupportedLayers> for resource '{}'",
                             pid);
                 }
             }
