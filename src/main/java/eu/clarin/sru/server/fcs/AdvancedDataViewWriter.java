@@ -151,8 +151,6 @@ public class AdvancedDataViewWriter {
      * @param altValue
      *            the span's alternate value or <code>null</code> if none
      * @param highlight
-     *            the span's alternate value or <code>null</code> if none
-     * @param highlight
      *            the highlight group
      * @throws IllegalArgumentException
      *             if any argument is invalid
