@@ -472,6 +472,7 @@ public class SimpleEndpointDescriptionParser {
             String pid = null;
             Map<String, String> titles = null;
             Map<String, String> descrs = null;
+            Map<String, String> insts = null;
             String link = null;
             List<String> langs = null;
             List<DataView> availableDataViews = null;
@@ -555,6 +556,38 @@ public class SimpleEndpointDescriptionParser {
                 if ((descrs != null) && !descrs.containsKey(LANG_EN)) {
                     throw new SRUConfigException(
                             "A <Description> with language 'en' is mandatory");
+                }
+            }
+
+            exp = xpath.compile("ed:Institution");
+            list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
+            if ((list != null) && (list.getLength() > 0)) {
+                for (int i = 0; i < list.getLength(); i++) {
+                    Element n = (Element) list.item(i);
+
+                    String lang = getLangAttribute(n);
+                    if (lang == null) {
+                        throw new SRUConfigException("Element <Institution> " +
+                                "must have a proper 'xml:lang' attribute");
+
+                    }
+                    String inst = cleanString(n.getTextContent());
+
+                    if (insts == null) {
+                        insts = new HashMap<>();
+                    }
+
+                    if (insts.containsKey(lang)) {
+                        logger.warn("institution with language '{}' " +
+                                "already exists", lang);
+                    } else {
+                        logger.debug("institution: '{}' '{}'", lang, inst);
+                        insts.put(lang, inst);
+                    }
+                }
+                if ((insts != null) && !insts.containsKey(LANG_EN)) {
+                    throw new SRUConfigException(
+                            "A <Institution> with language 'en' is mandatory");
                 }
             }
 
@@ -698,7 +731,7 @@ public class SimpleEndpointDescriptionParser {
                         "includes information about <AvailableLayers> for " +
                         "resource with pid '{}'", pid);
             }
-            ris.add(new ResourceInfo(pid, titles, descrs, link, langs,
+            ris.add(new ResourceInfo(pid, titles, descrs, insts, link, langs,
                     availableDataViews, availableLayers, sub));
         }
         return ris;

@@ -31,6 +31,7 @@ public class ResourceInfo {
     private final String pid;
     private final Map<String, String> title;
     private final Map<String, String> description;
+    private final Map<String, String> institution;
     private final String landingPageURI;
     private final List<String> languages;
     private final List<DataView> availableDataViews;
@@ -50,6 +51,10 @@ public class ResourceInfo {
      *            the description of the resource represented as a map with
      *            pairs of language code and description or <code>null</code> if
      *            not applicable
+     * @param institution
+     *            the institution of the resource represented as a map with
+     *            pairs of language code and institution names or <code>null</code>
+     *            if not applicable
      * @param landingPageURI
      *            a URI to the landing page of the resource or <code>null</code>
      *            if not applicable
@@ -66,9 +71,9 @@ public class ResourceInfo {
      *            <code>null</code> if not applicable
      */
     public ResourceInfo(String pid, Map<String, String> title,
-            Map<String, String> description, String landingPageURI,
-            List<String> languages, List<DataView> availableDataViews,
-            List<Layer> availableLayers,
+            Map<String, String> description, Map<String, String> institution,
+            String landingPageURI, List<String> languages,
+            List<DataView> availableDataViews, List<Layer> availableLayers,
             List<ResourceInfo> subResources) {
         if (pid == null) {
             throw new NullPointerException("pid == null");
@@ -86,6 +91,11 @@ public class ResourceInfo {
             this.description = Collections.unmodifiableMap(description);
         } else {
             this.description = null;
+        }
+        if ((institution != null) && !institution.isEmpty()) {
+            this.institution = Collections.unmodifiableMap(institution);
+        } else {
+            this.institution = null;
         }
 
         this.landingPageURI = landingPageURI;
@@ -182,6 +192,35 @@ public class ResourceInfo {
      */
     public String getDescription(String language) {
         return (description != null) ? description.get(language) : null;
+    }
+
+
+    /**
+     * Get the institution of this resource.
+     * 
+     * This is an optional attribute for endpoints that host resources from
+     * different institution but still want to bundle them in one endpoint.
+     * If not specified then it is the default institution that hosts the
+     * FCS endpoint.
+     *
+     * @return the institution of this resource or <code>null</code> if not
+     *         applicable or specified
+     */
+    public Map<String, String> getInstitution() {
+        return institution;
+    }
+
+
+    /**
+     * Get the institution of this resource for a specific language code.
+     *
+     * @param language
+     *            the language code
+     * @return the institution of this resource or <code>null</code> if not
+     *         applicable or specified
+     */
+    public String getInstitution(String language) {
+        return (institution != null) ? institution.get(language) : null;
     }
 
 

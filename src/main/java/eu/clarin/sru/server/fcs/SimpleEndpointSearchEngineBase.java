@@ -492,6 +492,18 @@ public abstract class SimpleEndpointSearchEngineBase extends
                     }
                 }
 
+                // institution
+                final Map<String, String> institution = resource.getInstitution();
+                if (institution != null) {
+                    for (Map.Entry<String, String> i : institution.entrySet()) {
+                        writer.writeStartElement(ED_NS, "Institution");
+                        writer.writeAttribute(XMLConstants.XML_NS_URI, "lang",
+                                i.getKey());
+                        writer.writeCharacters(i.getValue());
+                        writer.writeEndElement(); // "Institution" element
+                    }
+                }
+
                 // landing page
                 final String landingPageURI = resource.getLandingPageURI();
                 if (landingPageURI != null) {
