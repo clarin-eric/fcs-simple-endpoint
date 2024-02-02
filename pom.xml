@@ -111,7 +111,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.12.1</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -121,7 +121,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.6.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadoc</id>
@@ -135,10 +135,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>attach-source</id>
+                        <phase>verify</phase>
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
@@ -204,13 +205,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>3.4.2</version>
+                <version>3.5.0</version>
             </plugin>
             <!-- javadoc -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.6.3</version>
                 <configuration>
                     <links>
                         <link>https://clarin-eric.github.io/fcs-sru-server/apidocs/</link>
