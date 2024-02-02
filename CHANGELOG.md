@@ -1,6 +1,6 @@
 # Changelog
 
-# [1.7.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/1.7.0) - 2024-02-02
+# [1.7.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.7.0) - 2024-02-02
 
 - Additions:
   - Add support for `<Institution>` element to `<Resource>`s in `<EndpointDescription>`.
