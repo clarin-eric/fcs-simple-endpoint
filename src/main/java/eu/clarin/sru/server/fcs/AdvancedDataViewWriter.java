@@ -307,24 +307,14 @@ public class AdvancedDataViewWriter {
         writer.setPrefix(FCS_HITS_PREFIX, FCS_HITS_NS);
         writer.writeStartElement(FCS_HITS_NS, "Result");
         writer.writeNamespace(FCS_HITS_PREFIX, FCS_HITS_NS);
-        boolean needSpace = false;
         for (Span span : spans) {
             if (span.value.length() > 0) {
-                if (needSpace) {
-                    writer.writeCharacters(" ");
-                    needSpace = false;
-                }
                 if (span.highlight != null) {
                     writer.writeStartElement(FCS_HITS_NS, "Hit");
                     writer.writeCharacters(span.value);
                     writer.writeEndElement(); // "Hit" element
-                    needSpace = true;
                 } else {
                     writer.writeCharacters(span.value);
-                    if (!Character.isWhitespace(
-                            (span.value.charAt(span.value.length() - 1)))) {
-                        needSpace = true;
-                    }
                 }
             }
         }
