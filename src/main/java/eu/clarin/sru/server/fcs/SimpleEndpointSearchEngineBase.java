@@ -72,6 +72,8 @@ public abstract class SimpleEndpointSearchEngineBase extends
             "eu.clarin.sru.server.fcs.authentication.acceptNotBefore";
     public static final String FCS_AUTHENTICATION_PUBLIC_KEY_PARAM_PREFIX =
             "eu.clarin.sru.server.fcs.authentication.key.";
+    public static final String FCS_AUTHENTICATION_PUBLIC_ISSUER_PARAM_PREFIX =
+            "eu.clarin.sru.server.fcs.authentication.issuer.";
     private static final String RESOURCE_URI_PREFIX = "resource:";
     private static final String X_FCS_ENDPOINT_DESCRIPTION =
             "x-fcs-endpoint-description";
@@ -194,14 +196,18 @@ public abstract class SimpleEndpointSearchEngineBase extends
                         }
                         String keyFileName = entry.getValue();
                         logger.debug("keyId = {}, keyFile = {}", keyId, keyFileName);
+                        String issuer = params.get(FCS_AUTHENTICATION_PUBLIC_ISSUER_PARAM_PREFIX + keyId);
+                        if (issuer != null) {
+                            logger.debug("keyId = {} with issuer = {}", keyId, issuer);
+                        }
                         if (keyFileName.regionMatches(0, RESOURCE_URI_PREFIX, 0, RESOURCE_URI_PREFIX.length())) {
                             String path = keyFileName.substring(RESOURCE_URI_PREFIX.length());
                             logger.debug("loading key '{}' from resource '{}'", keyId, keyFileName);
                             InputStream in = context.getResourceAsStream(path);
-                            builder.withPublicKey(keyId, in);
+                            builder.withPublicKey(keyId, in, issuer);
                         } else {
                             logger.debug("loading key '{}' from file '{}'", keyId, keyFileName);
-                            builder.withPublicKey(keyId, new File(keyFileName));
+                            builder.withPublicKey(keyId, new File(keyFileName), issuer);
                         }
                     }
                 }

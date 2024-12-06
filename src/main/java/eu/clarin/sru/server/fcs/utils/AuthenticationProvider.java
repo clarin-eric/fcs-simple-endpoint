@@ -178,11 +178,14 @@ public class AuthenticationProvider implements SRUAuthenticationInfoProvider {
     public static class Builder {
         private List<Key> keys;
         private List<String> audiences = null;
+        private List<String> issuers = null;
         private boolean ignoreIssuedAt = false;
         private long issuedAtLeeway = -1;
         private long expiresAtLeeway = -1;
         private long notBeforeLeeway = -1;
         private Verification builder;
+
+
         private Builder() {
         }
 
@@ -192,6 +195,15 @@ public class AuthenticationProvider implements SRUAuthenticationInfoProvider {
                 this.audiences = new ArrayList<>();
             }
             this.audiences.add(audience);
+            return this;
+        }
+
+
+        public Builder withIssuer(String issuer) {
+            if (this.issuers == null) {
+                this.issuers = new ArrayList<>();
+            }
+            this.issuers.add(issuer);
             return this;
         }
 
@@ -229,22 +241,48 @@ public class AuthenticationProvider implements SRUAuthenticationInfoProvider {
         }
 
 
-        public Builder withPublicKey(String keyId, File file) throws SRUConfigException {
+        public Builder withPublicKey(String keyId, RSAPublicKey publicKey, String issuer) {
+            if (publicKey == null) {
+                throw new NullPointerException("publicKey == null");
+            }
+            if (keys == null) {
+                keys = new ArrayList<>();
+            }
+            keys.add(new Key(keyId, publicKey, issuer));
+            return this;
+        }
+
+
+        public Builder withPublicKey(String keyId, RSAPublicKey publicKey) {
+            return withPublicKey(keyId, publicKey, null);
+        }
+
+
+        public Builder withPublicKey(String keyId, InputStream stream, String issuer) throws SRUConfigException {
+            return withPublicKey(keyId, loadPublicKeyFromStream(keyId, stream), issuer);
+        }
+
+
+        public Builder withPublicKey(String keyId, InputStream stream) throws SRUConfigException {
+            return withPublicKey(keyId, stream, null);
+        }
+
+
+        public Builder withPublicKey(String keyId, File file, String issuer) throws SRUConfigException {
             try {
-                loadPublicKeyFromStream(keyId, new FileInputStream(file));
-                return this;
+                return withPublicKey(keyId, loadPublicKeyFromStream(keyId, new FileInputStream(file)), issuer);
             } catch (FileNotFoundException e) {
                 throw new SRUConfigException("failed to load key '" + keyId + "'", e);
             }
         }
 
 
-        public Builder withPublicKey(String keyId, InputStream stream) throws SRUConfigException {
-            loadPublicKeyFromStream(keyId, stream);
-            return this;
+        public Builder withPublicKey(String keyId, File file) throws SRUConfigException {
+            return withPublicKey(keyId, file, null);
         }
 
-        private void loadPublicKeyFromStream(String keyId, InputStream publicKeyStream) throws SRUConfigException {
+
+        private static RSAPublicKey loadPublicKeyFromStream(String keyId, InputStream publicKeyStream) throws SRUConfigException {
             PemReader pemReader = null;
             try {
                 KeyFactory factory = KeyFactory.getInstance("RSA");
@@ -258,10 +296,7 @@ public class AuthenticationProvider implements SRUAuthenticationInfoProvider {
                 X509EncodedKeySpec pubKeySpec = new X509EncodedKeySpec(content);
                 RSAPublicKey publicKey = (RSAPublicKey) factory.generatePublic(pubKeySpec);
 
-                if (keys == null) {
-                    keys = new ArrayList<>();
-                }
-                keys.add(new Key(keyId, publicKey));
+                return publicKey;
             } catch (NoSuchAlgorithmException | InvalidKeySpecException | IOException e) {
                 throw new SRUConfigException("failed to load key '" + keyId + "'", e);
             } finally {
@@ -286,8 +321,21 @@ public class AuthenticationProvider implements SRUAuthenticationInfoProvider {
 
                     builder = JWT.require(algorithm);
                     if (audiences != null) {
+                        // verify that "aud" claim contains at least one of the audiences
                         builder.withAnyOfAudience(
                                 audiences.toArray(new String[audiences.size()]));
+                    }
+                    if (issuers != null || key.issuer != null) {
+                        // verify that "iss" claim contains one of the provided issuers
+                        List<String> allIssuers = new ArrayList<>();
+                        if (key.issuer != null) {
+                            allIssuers.add(key.issuer);
+                        }
+                        if (issuers != null) {
+                            allIssuers.addAll(issuers);
+                        }
+                        builder.withIssuer(allIssuers.toArray(
+                                new String[allIssuers.size()]));
                     }
                     if (ignoreIssuedAt) {
                         builder.ignoreIssuedAt();
@@ -320,13 +368,20 @@ public class AuthenticationProvider implements SRUAuthenticationInfoProvider {
 
 
         private static final class Key {
-            public String keyId;
-            public RSAPublicKey publicKey;
+            public final String keyId;
+            public final RSAPublicKey publicKey;
+            public final String issuer;
+
+
+            private Key(String keyId, RSAPublicKey publicKey, String issuer) {
+                this.keyId = keyId;
+                this.publicKey = publicKey;
+                this.issuer = issuer;
+            }
 
 
             private Key(String keyId, RSAPublicKey publicKey) {
-                this.keyId = keyId;
-                this.publicKey = publicKey;
+                this(keyId, publicKey, null);
             }
         }
     }
