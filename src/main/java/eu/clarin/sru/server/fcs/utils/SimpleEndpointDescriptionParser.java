@@ -51,6 +51,7 @@ import eu.clarin.sru.server.SRUConfigException;
 import eu.clarin.sru.server.fcs.Constants;
 import eu.clarin.sru.server.fcs.DataView;
 import eu.clarin.sru.server.fcs.DataView.DeliveryPolicy;
+import eu.clarin.sru.server.fcs.ResourceInfo.AvailabilityRestriction;
 import eu.clarin.sru.server.fcs.EndpointDescription;
 import eu.clarin.sru.server.fcs.Layer;
 import eu.clarin.sru.server.fcs.ResourceInfo;
@@ -79,6 +80,9 @@ public class SimpleEndpointDescriptionParser {
     private static final String POLICY_NEED_REQUEST = "need-to-request";
     private static final String LAYER_ENCODING_VALUE = "value";
     private static final String LAYER_ENCODING_EMPTY = "empty";
+    private static final String AVAILABILITY_RESTRICTION_AUTHONLY = "authOnly";
+    private static final String AVAILABILITY_RESTRICTION_PERSONALID = "personalIdentifier";
+
     private static final Logger logger =
             LoggerFactory.getLogger(SimpleEndpointDescriptionParser.class);
 
@@ -217,6 +221,12 @@ public class SimpleEndpointDescriptionParser {
             logger.warn("Endpoint description is declared as version " +
                     "FCS 1.0 (@version = 1), but contains support for " +
                     "Advanced Search in capabilities list! FCS 1.0 only " +
+                    "supports Basic Search");
+        }
+        if (capabilities.contains(Constants.CAP_AUTHENTICATED_SEARCH) && (version < 2)) {
+            logger.warn("Endpoint description is declared as version " +
+                    "FCS 1.0 (@version = 1), but contains support for " +
+                    "Authenticated Search in capabilities list! FCS 1.0 only " +
                     "supports Basic Search");
         }
         logger.debug("CAPS:'{}'", capabilities);
@@ -420,12 +430,15 @@ public class SimpleEndpointDescriptionParser {
         } // necessary
         logger.debug("L: {}", supportedLayers);
 
+        boolean hasAuthCap = capabilities.contains(Constants.CAP_AUTHENTICATED_SEARCH);
+
         // resources
         exp = xpath.compile("/ed:EndpointDescription/ed:Resources/ed:Resource");
         list = (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
         final Set<String> pids = new HashSet<>();
         List<ResourceInfo> resources = parseResources(xpath, list, pids,
-                supportedDataViews, supportedLayers, version, hasAdvView);
+                supportedDataViews, supportedLayers, version, hasAdvView,
+                hasAuthCap);
         if ((resources == null) || resources.isEmpty()) {
             throw new SRUConfigException("No resources where " +
                     "defined in endpoint description");
@@ -462,7 +475,8 @@ public class SimpleEndpointDescriptionParser {
 
     private static List<ResourceInfo> parseResources(XPath xpath,
             NodeList nodes, Set<String> pids, List<DataView> supportedDataViews,
-            List<Layer> supportedLayers, int version, boolean hasAdv)
+            List<Layer> supportedLayers, int version, boolean hasAdv,
+            boolean hasAuthCap)
                     throws SRUConfigException, XPathExpressionException {
         List<ResourceInfo> ris = null;
         for (int k = 0; k < nodes.getLength(); k++) {
@@ -473,6 +487,7 @@ public class SimpleEndpointDescriptionParser {
             Map<String, String> insts = null;
             String link = null;
             List<String> langs = null;
+            AvailabilityRestriction availabilityRestriction = AvailabilityRestriction.NONE;
             List<DataView> availableDataViews = null;
             List<Layer> availableLayers = null;
             List<ResourceInfo> sub = null;
@@ -628,6 +643,32 @@ public class SimpleEndpointDescriptionParser {
                 }
             }
 
+            exp = xpath.compile("ed:AvailabilityRestriction");
+            list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
+            if ((list != null) && (list.getLength() > 0)) {
+                for (int i = 0; i < list.getLength(); i++) {
+                    Element n = (Element) list.item(i);
+                    String avr = cleanString(n.getTextContent());
+                    if (avr != null) {
+                        if (AVAILABILITY_RESTRICTION_AUTHONLY.equals(avr)) {
+                            availabilityRestriction = AvailabilityRestriction.AUTH_ONLY;
+                        } else if (AVAILABILITY_RESTRICTION_PERSONALID.equals(avr)) {
+                            availabilityRestriction = AvailabilityRestriction.PERSONAL_IDENTIFIER;
+                        } else {
+                            throw new SRUConfigException("invalid availability restriction: " + avr);
+                        }
+                    }
+                    if (!AvailabilityRestriction.NONE.equals(availabilityRestriction) && !hasAuthCap) {
+                        throw new SRUConfigException(
+                                    "Resource declares <AvailabilityRestriction>" + 
+                                    "but does support 'authenticated-search' (" +
+                                    Constants.CAP_AUTHENTICATED_SEARCH + ")!");
+                    }
+                    // TODO: check if parent also declared restriction and whether they differ -> warn
+                }
+            }
+            logger.debug("AvailabilityRestriction: {}", availabilityRestriction);
+
             exp = xpath.compile("ed:AvailableDataViews");
             Node n = (Node) exp.evaluate(node, XPathConstants.NODE);
             if ((n != null) && (n instanceof Element)) {
@@ -718,7 +759,7 @@ public class SimpleEndpointDescriptionParser {
             list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
             if ((list != null) && (list.getLength() > 0)) {
                 sub = parseResources(xpath, list, pids, supportedDataViews,
-                        supportedLayers, version, hasAdv);
+                        supportedLayers, version, hasAdv, hasAuthCap);
             }
 
             if (ris == null) {
@@ -730,7 +771,8 @@ public class SimpleEndpointDescriptionParser {
                         "resource with pid '{}'", pid);
             }
             ris.add(new ResourceInfo(pid, titles, descrs, insts, link, langs,
-                    availableDataViews, availableLayers, sub));
+                    availabilityRestriction, availableDataViews,
+                    availableLayers, sub));
         }
         return ris;
     }

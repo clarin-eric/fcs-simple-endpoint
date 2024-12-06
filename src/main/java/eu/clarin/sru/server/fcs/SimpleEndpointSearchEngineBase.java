@@ -45,6 +45,7 @@ import eu.clarin.sru.server.SRUScanResultSet;
 import eu.clarin.sru.server.SRUSearchEngine;
 import eu.clarin.sru.server.SRUServer;
 import eu.clarin.sru.server.SRUServerConfig;
+import eu.clarin.sru.server.fcs.ResourceInfo.AvailabilityRestriction;
 import eu.clarin.sru.server.fcs.utils.AuthenticationProvider;
 import eu.clarin.sru.server.utils.SRUAuthenticationInfoProviderFactory;
 import eu.clarin.sru.server.utils.SRUSearchEngineBase;
@@ -522,6 +523,26 @@ public abstract class SimpleEndpointSearchEngineBase extends
 
                 }
                 writer.writeEndElement(); // "Languages" element
+
+                if (resource.hasAvailabilityRestriction()) {
+                    final AvailabilityRestriction availabilityRestriction = resource.getAvailabilityRestriction();
+                    String s;
+                    switch (availabilityRestriction) {
+                        case AUTH_ONLY:
+                            s = "authOnly";
+                            break;
+                        case PERSONAL_IDENTIFIER:
+                            s = "personalIdentifier";
+                            break;
+                        default:
+                            throw new XMLStreamException(
+                                    "invalid value for payload availability restriction: " +
+                                            availabilityRestriction);
+                    } // switch
+                    writer.writeStartElement(ED_NS, "AvailabilityRestriction");
+                    writer.writeCharacters(s);
+                    writer.writeEndElement(); // "AvailabilityRestriction" element
+                }
 
                 // available data views
                 StringBuilder sb = new StringBuilder();

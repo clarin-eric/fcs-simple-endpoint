@@ -67,6 +67,8 @@ public final class Constants {
             URI.create("http://clarin.eu/fcs/capability/basic-search");
     public static final URI CAP_ADVANCED_SEARCH =
             URI.create("http://clarin.eu/fcs/capability/advanced-search");
+    public static final URI CAP_AUTHENTICATED_SEARCH =
+            URI.create("http://clarin.eu/fcs/capability/authenticated-search");
 
     // FCS request parameters to extract Resource PIDs
     public static final String X_FCS_CONTEXT_KEY = "x-fcs-context";
