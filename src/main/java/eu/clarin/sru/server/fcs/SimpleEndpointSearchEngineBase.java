@@ -19,6 +19,8 @@ package eu.clarin.sru.server.fcs;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,6 +34,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.z3950.zing.cql.CQLNode;
 import org.z3950.zing.cql.CQLTermNode;
+
+import com.auth0.jwk.Jwk;
+import com.auth0.jwk.JwkException;
+import com.auth0.jwk.UrlJwkProvider;
 
 import eu.clarin.sru.server.SRUAuthenticationInfoProvider;
 import eu.clarin.sru.server.SRUConfigException;
@@ -72,6 +78,8 @@ public abstract class SimpleEndpointSearchEngineBase extends
             "eu.clarin.sru.server.fcs.authentication.acceptNotBefore";
     public static final String FCS_AUTHENTICATION_PUBLIC_KEY_PARAM_PREFIX =
             "eu.clarin.sru.server.fcs.authentication.key.";
+    public static final String FCS_AUTHENTICATION_PUBLIC_JWKS_PARAM_PREFIX =
+            "eu.clarin.sru.server.fcs.authentication.jwks.";
     public static final String FCS_AUTHENTICATION_PUBLIC_ISSUER_PARAM_PREFIX =
             "eu.clarin.sru.server.fcs.authentication.issuer.";
     private static final String RESOURCE_URI_PREFIX = "resource:";
@@ -190,6 +198,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
                 // load keys
                 for (Entry<String, String> entry : params.entrySet()) {
                     if (entry.getKey().startsWith(FCS_AUTHENTICATION_PUBLIC_KEY_PARAM_PREFIX)) {
+                        // PEM public key to be loaded from a file (either embedded or on local file system)
                         String keyId = entry.getKey().substring(FCS_AUTHENTICATION_PUBLIC_KEY_PARAM_PREFIX.length()).trim();
                         if (keyId.isEmpty()) {
                             throw new SRUConfigException("init-parameter: '" + entry.getKey() + "' is invalid: keyId is empty!");
@@ -208,6 +217,30 @@ public abstract class SimpleEndpointSearchEngineBase extends
                         } else {
                             logger.debug("loading key '{}' from file '{}'", keyId, keyFileName);
                             builder.withPublicKey(keyId, new File(keyFileName), issuer);
+                        }
+                    } else if (entry.getKey().startsWith(FCS_AUTHENTICATION_PUBLIC_JWKS_PARAM_PREFIX)) {
+                        // JWK(S) to be loaded from a URL/domain
+                        // TODO: encode keyId (for JWKS) in parameter name or as separate related init-param?
+                        String keyId = entry.getKey().substring(FCS_AUTHENTICATION_PUBLIC_JWKS_PARAM_PREFIX.length()).trim();
+                        if (keyId.isEmpty()) {
+                            throw new SRUConfigException("init-parameter: '" + entry.getKey() + "' is invalid: keyId is empty!");
+                        }
+                        String keyUrl = entry.getValue();
+                        logger.debug("keyId = {}, url = {}", keyId, keyUrl);
+                        String issuer = params.get(FCS_AUTHENTICATION_PUBLIC_ISSUER_PARAM_PREFIX + keyId);
+                        if (issuer != null) {
+                            logger.debug("keyId = {} with issuer = {}", keyId, issuer);
+                        }
+                        UrlJwkProvider provider = new UrlJwkProvider(keyUrl);
+                        try {
+                            Jwk jwk = provider.get(null); // assume only a single key at this JWKS endpoint
+                            PublicKey publicKey = jwk.getPublicKey();
+                            if (!(publicKey instanceof RSAPublicKey)) {
+                                throw new SRUConfigException("JWK is not a RSA public key!");
+                            }
+                            builder.withPublicKey(keyId, (RSAPublicKey) publicKey, issuer);
+                        } catch (JwkException e) {
+                            throw new SRUConfigException("Failed to load JWK from JWKS endpoint.", e);
                         }
                     }
                 }
