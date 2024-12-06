@@ -48,6 +48,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import eu.clarin.sru.server.SRUConfigException;
+import eu.clarin.sru.server.fcs.Constants;
 import eu.clarin.sru.server.fcs.DataView;
 import eu.clarin.sru.server.fcs.DataView.DeliveryPolicy;
 import eu.clarin.sru.server.fcs.EndpointDescription;
@@ -70,10 +71,7 @@ public class SimpleEndpointDescriptionParser {
             "http://clarin.eu/fcs/endpoint-description";
     private static final String NS_LEGACY =
             "http://clarin.eu/fcs/1.0/resource-info";
-    private static final URI CAP_BASIC_SEARCH =
-            URI.create("http://clarin.eu/fcs/capability/basic-search");
-    private static final URI CAP_ADVANCED_SEARCH =
-            URI.create("http://clarin.eu/fcs/capability/advanced-search");
+    
     private static final String MIMETYPE_HITS = "application/x-clarin-fcs-hits+xml";
     private static final String MIMETYPE_ADV = "application/x-clarin-fcs-adv+xml";
     private static final String LANG_EN = "en";
@@ -209,13 +207,13 @@ public class SimpleEndpointDescriptionParser {
             logger.warn("No capabilities where defined in " +
                     "endpoint configuration");
         }
-        if (!capabilities.contains(CAP_BASIC_SEARCH)) {
+        if (!capabilities.contains(Constants.CAP_BASIC_SEARCH)) {
             logger.warn("capability '{}' was not defined in endpoint " +
                     "description; it was added to meet the specification. Please " +
-                    "update your endpoint description!", CAP_BASIC_SEARCH);
-            capabilities.add(CAP_BASIC_SEARCH);
+                    "update your endpoint description!", Constants.CAP_BASIC_SEARCH);
+            capabilities.add(Constants.CAP_BASIC_SEARCH);
         }
-        if (capabilities.contains(CAP_ADVANCED_SEARCH) && (version < 2)) {
+        if (capabilities.contains(Constants.CAP_ADVANCED_SEARCH) && (version < 2)) {
             logger.warn("Endpoint description is declared as version " +
                     "FCS 1.0 (@version = 1), but contains support for " +
                     "Advanced Search in capabilities list! FCS 1.0 only " +
@@ -313,7 +311,7 @@ public class SimpleEndpointDescriptionParser {
             throw new SRUConfigException("Generic Hits Data View (" +
                     MIMETYPE_HITS + ") was not declared in <SupportedDataViews>");
         }
-        if (capabilities.contains(CAP_ADVANCED_SEARCH) && !hasAdvView) {
+        if (capabilities.contains(Constants.CAP_ADVANCED_SEARCH) && !hasAdvView) {
             throw new SRUConfigException("Endpoint claimes to support " +
                     "Advanced FCS but does not declare Advanced Data View (" +
                     MIMETYPE_ADV + ") in <SupportedDataViews>");
@@ -413,12 +411,12 @@ public class SimpleEndpointDescriptionParser {
         }
 
         if ((supportedLayers != null) &&
-                !capabilities.contains(CAP_ADVANCED_SEARCH)) {
+                !capabilities.contains(Constants.CAP_ADVANCED_SEARCH)) {
                 logger.warn("Endpoint description has <SupportedLayer> but " +
                         "does not indicate support for Advanced Search. " +
                         "Please consider adding capability ({}) to " +
                         "your endpoint description to make use of layers!",
-                        CAP_ADVANCED_SEARCH);
+                        Constants.CAP_ADVANCED_SEARCH);
         } // necessary
         logger.debug("L: {}", supportedLayers);
 

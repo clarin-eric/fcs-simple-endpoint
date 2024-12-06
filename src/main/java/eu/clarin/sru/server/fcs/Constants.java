@@ -16,6 +16,8 @@
  */
 package eu.clarin.sru.server.fcs;
 
+import java.net.URI;
+
 import eu.clarin.sru.server.SRUConstants;
 
 /**
@@ -45,12 +47,14 @@ public final class Constants {
             FCS_DIAGNOSTIC_URI_PREFIX + 13;
 
 
+    // query types
     public static final String FCS_QUERY_TYPE_FCS          = "fcs";
     public static final String FCS_QUERY_TYPE_CQL          =
             SRUConstants.SRU_QUERY_TYPE_CQL;
     public static final String FCS_QUERY_TYPE_SEARCH_TERMS =
             SRUConstants.SRU_QUERY_TYPE_SEARCH_TERMS;
 
+    // FCS advanced layer type identifiers
     public static final String FCS_LAYER_TYPE_TEXT = "text";
     public static final String FCS_LAYER_TYPE_LEMMA = "lemma";
     public static final String FCS_LAYER_TYPE_POS = "pos";
@@ -58,6 +62,21 @@ public final class Constants {
     public static final String FCS_LAYER_TYPE_NORM = "norm";
     public static final String FCS_LAYER_TYPE_PHONETIC = "phonetic";
 
+    // FCS capability URLs
+    public static final URI CAP_BASIC_SEARCH =
+            URI.create("http://clarin.eu/fcs/capability/basic-search");
+    public static final URI CAP_ADVANCED_SEARCH =
+            URI.create("http://clarin.eu/fcs/capability/advanced-search");
+
+    // FCS request parameters to extract Resource PIDs
+    public static final String X_FCS_CONTEXT_KEY = "x-fcs-context";
+    public static final String X_FCS_CONTEXT_SEPARATOR = ",";
+
+    // FCS request parameters to extract Data Views
+    public static final String X_FCS_DATAVIEWS_KEY = "x-fcs-dataviews";
+    public static final String X_FCS_DATAVIEWS_SEPARATOR = ",";
+
+    public static final String CLARIN_FCS_RECORD_SCHEMA = "http://clarin.eu/fcs/resource";
 
     /* hide constructor */
     private Constants() {
