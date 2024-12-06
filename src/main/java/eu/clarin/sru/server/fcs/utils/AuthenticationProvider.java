@@ -163,7 +163,7 @@ public class AuthenticationProvider implements SRUAuthenticationInfoProvider {
         }
 
         @Override
-        public String getAuthentictaionMethod() {
+        public String getAuthenticationMethod() {
             return "JWT";
         }
 
