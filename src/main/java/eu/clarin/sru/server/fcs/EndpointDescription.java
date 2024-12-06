@@ -133,4 +133,19 @@ public interface EndpointDescription {
     public List<ResourceInfo> getResourceList(String pid)
             throws SRUException;
 
+    /**
+     * Get the resources identified by a given persistent identifier.
+     * <p>
+     * The implementation of this method <em>must</em> be thread-safe.
+     * </p>
+     *
+     * @param pid
+     *            the persistent identifier of the resource
+     * @return a ResourceInfo or <code>null</code> if not applicable
+     * @throws SRUException
+     *             if an error occurred
+     */
+    public ResourceInfo getResource(String pid)
+            throws SRUException;
+
 } // interface EndpointDescription

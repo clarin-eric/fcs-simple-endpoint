@@ -17,6 +17,7 @@
 package eu.clarin.sru.server.fcs.utils;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -103,6 +104,27 @@ public class SimpleEndpointDescription extends AbstractEndpointDescriptionBase {
     }
 
 
+    @Override
+    public ResourceInfo getResource(String pid) throws SRUException {
+        if (pid == null) {
+            throw new NullPointerException("pid == null");
+        }
+        if (pid.isEmpty()) {
+            throw new IllegalArgumentException("pid is empty");
+        }
+        if (!pidCaseSensitive) {
+            pid = pid.toLowerCase();
+        }
+
+        if (pid.equals(PID_ROOT)) {
+            throw new IllegalArgumentException("Root PID '"+ PID_ROOT +"' must not be used here!");
+        }
+
+        ResourceInfo ri = findRecursive(entries, pid);
+        return ri;
+    }
+
+
     private ResourceInfo findRecursive(List<ResourceInfo> items, String pid) {
         if ((items != null) && !items.isEmpty()) {
             for (ResourceInfo item : items) {
@@ -125,6 +147,43 @@ public class SimpleEndpointDescription extends AbstractEndpointDescriptionBase {
             } // for
         }
         return null;
+    }
+
+
+    public List<String> getResourcePids(String pid) throws SRUException {
+        if (pid == null) {
+            throw new NullPointerException("pid == null");
+        }
+        if (pid.isEmpty()) {
+            throw new IllegalArgumentException("pid is empty");
+        }
+        if (!pidCaseSensitive) {
+            pid = pid.toLowerCase();
+        }
+
+        List<ResourceInfo> items = getResourceList(pid);
+        List<String> pids = collectPidsRecursive(items);
+        if (!PID_ROOT.equals(pid)) {
+            pids.add(0, pid);
+        }
+        return pids;
+    }
+
+    private List<String> collectPidsRecursive(List<ResourceInfo> items) throws SRUException {
+        if ((items == null) || items.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<String> pids = new ArrayList<>();
+        for (ResourceInfo item : items) {
+            pids.add(item.getPid());
+
+            if (item.hasSubResources()) {
+                List<String> subPids = collectPidsRecursive(item.getSubResources());
+                pids.addAll(subPids);
+            }
+        }
+        return pids;
     }
 
 } // class SimpleEndpointDescription
