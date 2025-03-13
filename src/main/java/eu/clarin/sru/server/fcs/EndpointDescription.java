@@ -117,6 +117,18 @@ public interface EndpointDescription {
 
 
     /**
+     * Get the list of lex fields that are supported in Lexical Search by this
+     * endpoint.
+     * <p>
+     * The implementation of this method <em>must</em> be thread-safe.
+     * </p>
+     *
+     * @return the list of lex fields supported in Lexical Search by this endpoint
+     */
+    public List<LexField> getSupportedLexFields();
+
+
+    /**
      * Get a list of all resources sub-ordinate to a resource identified by a
      * given persistent identifier.
      * <p>

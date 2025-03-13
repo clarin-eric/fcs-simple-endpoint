@@ -25,6 +25,7 @@ import eu.clarin.sru.server.SRUException;
 import eu.clarin.sru.server.fcs.DataView;
 import eu.clarin.sru.server.fcs.EndpointDescription;
 import eu.clarin.sru.server.fcs.Layer;
+import eu.clarin.sru.server.fcs.LexField;
 import eu.clarin.sru.server.fcs.ResourceInfo;
 
 
@@ -54,6 +55,9 @@ public class SimpleEndpointDescription extends AbstractEndpointDescriptionBase {
      * @param supportedLayers
      *            a list of layers supported for Advanced Search by this
      *            endpoint or <code>null</code>
+     * @param supportedLexFields
+     *            a list of lex fields supported for Lexical Search by this
+     *            endpoint or <code>null</code>
      * @param resources
      *            a static list of resource info records
      * @param pidCaseSensitive
@@ -64,9 +68,10 @@ public class SimpleEndpointDescription extends AbstractEndpointDescriptionBase {
     public SimpleEndpointDescription(int version, List<URI> capabilities,
             List<DataView> supportedDataViews,
             List<Layer> supportedLayers,
+            List<LexField> supportedLexFields,
             List<ResourceInfo> resources,
             boolean pidCaseSensitive) {
-        super(version, capabilities, supportedDataViews, supportedLayers);
+        super(version, capabilities, supportedDataViews, supportedLayers, supportedLexFields);
 
         if (resources == null) {
             throw new NullPointerException("entries == null");
@@ -168,6 +173,7 @@ public class SimpleEndpointDescription extends AbstractEndpointDescriptionBase {
         }
         return pids;
     }
+
 
     private List<String> collectPidsRecursive(List<ResourceInfo> items) throws SRUException {
         if ((items == null) || items.isEmpty()) {

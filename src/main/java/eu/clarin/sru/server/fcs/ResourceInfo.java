@@ -56,6 +56,7 @@ public class ResourceInfo {
     private final AvailabilityRestriction availabilityRestriction;
     private final List<DataView> availableDataViews;
     private final List<Layer> availableLayers;
+    private final List<LexField> availableLexFields;
     private final List<ResourceInfo> subResources;
 
 
@@ -89,6 +90,9 @@ public class ResourceInfo {
      * @param availableLayers
      *            the list if layers available for Advanced Search or
      *            <code>null</code> if not applicable
+     * @param availableLexFields
+     *            the list if lex fields available for Lexical Search or
+     *            <code>null</code> if not applicable
      * @param subResources
      *            a list of resource sub-ordinate to this resource or
      *            <code>null</code> if not applicable
@@ -98,7 +102,7 @@ public class ResourceInfo {
             String landingPageURI, List<String> languages,
             AvailabilityRestriction availabilityRestriction,
             List<DataView> availableDataViews, List<Layer> availableLayers,
-            List<ResourceInfo> subResources) {
+            List<LexField> availableLexFields, List<ResourceInfo> subResources) {
         if (pid == null) {
             throw new NullPointerException("pid == null");
         }
@@ -142,11 +146,18 @@ public class ResourceInfo {
         this.availableDataViews =
                 Collections.unmodifiableList(availableDataViews);
 
-        if ((availableLayers != null) && !availableDataViews.isEmpty()) {
+        if ((availableLayers != null) && !availableLayers.isEmpty()) {
             this.availableLayers =
                     Collections.unmodifiableList(availableLayers);
         } else {
             this.availableLayers = null;
+        }
+
+        if ((availableLexFields != null) && !availableLexFields.isEmpty()) {
+            this.availableLexFields =
+                    Collections.unmodifiableList(availableLexFields);
+        } else {
+            this.availableLexFields = null;
         }
 
         if ((subResources != null) && !subResources.isEmpty()) {
@@ -315,6 +326,17 @@ public class ResourceInfo {
      */
     public List<Layer> getAvailableLayers() {
         return availableLayers;
+    }
+
+
+    /**
+     * Get the list of lex fields that are available in Lexical Search for this
+     * resource.
+     *
+     * @return the list of lex fields or <code>null</code>
+     */
+    public List<LexField> getAvailableLexFields() {
+        return availableLexFields;
     }
 
 
