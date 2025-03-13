@@ -1,6 +1,7 @@
 /**
- * This software is copyright (c) 2013-2022 by
+ * This software is copyright (c) 2013-2025 by
  *  - Leibniz-Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ *  - Saxon Academy of Sciences and Humanities in Leipzig (https://www.saw-leipzig.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
  * the GNU General Public License v3 of which you
@@ -10,6 +11,7 @@
  *   http://www.gnu.org/licenses/gpl-3.0.txt
  *
  * @copyright Leibniz-Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
+ * @copyright Saxon Academy of Sciences and Humanities in Leipzig (https://www.saw-leipzig.de)
  *
  * @license http://www.gnu.org/licenses/gpl-3.0.txt
  *  GNU General Public License v3
@@ -111,6 +113,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
         super.init(context, config, parserReqistryBuilder, params);
 
         parserReqistryBuilder.register(new FCSQueryParser());
+        parserReqistryBuilder.register(new LexCQLQueryParser());
 
         logger.debug("initializing search engine implementation");
         doInit(context, config, parserReqistryBuilder, params);
@@ -481,6 +484,19 @@ public abstract class SimpleEndpointSearchEngineBase extends
                 }
                 writer.writeEndElement(); // "SupportedLayers" element
             }
+
+            // SupportedLexFields
+            final List<LexField> fields = endpointDescription.getSupportedLexFields();
+            if (fields != null) {
+                writer.writeStartElement(ED_NS, "SupportedLexFields");
+                for (LexField field : fields) {
+                    writer.writeStartElement(ED_NS, "SupportedLexField");
+                    writer.writeAttribute("id", field.getId());
+                    writer.writeCharacters(field.getType());
+                    writer.writeEndElement(); // "SupportedLexField" element
+                }
+                writer.writeEndElement(); // "SupportedLexFields" element
+            }
         }
 
         // Resources
@@ -599,13 +615,26 @@ public abstract class SimpleEndpointSearchEngineBase extends
                     final List<Layer> layers = resource.getAvailableLayers();
                     if (layers != null) {
                         sb = new StringBuilder();
-                        for (Layer layer : resource.getAvailableLayers()) {
+                        for (Layer layer : layers) {
                             if (sb.length() > 0) {
                                 sb.append(" ");
                             }
                             sb.append(layer.getId());
                         }
                         writer.writeEmptyElement(ED_NS, "AvailableLayers");
+                        writer.writeAttribute("ref", sb.toString());
+                    }
+
+                    final List<LexField> fields = resource.getAvailableLexFields();
+                    if (fields != null) {
+                        sb = new StringBuilder();
+                        for (LexField field : fields) {
+                            if (sb.length() > 0) {
+                                sb.append(" ");
+                            }
+                            sb.append(field.getId());
+                        }
+                        writer.writeEmptyElement(ED_NS, "AvailableLexFields");
                         writer.writeAttribute("ref", sb.toString());
                     }
                 }

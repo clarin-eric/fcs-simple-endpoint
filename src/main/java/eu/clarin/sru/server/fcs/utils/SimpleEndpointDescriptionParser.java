@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -54,6 +55,7 @@ import eu.clarin.sru.server.fcs.DataView.DeliveryPolicy;
 import eu.clarin.sru.server.fcs.ResourceInfo.AvailabilityRestriction;
 import eu.clarin.sru.server.fcs.EndpointDescription;
 import eu.clarin.sru.server.fcs.Layer;
+import eu.clarin.sru.server.fcs.LexField;
 import eu.clarin.sru.server.fcs.ResourceInfo;
 
 
@@ -72,9 +74,7 @@ public class SimpleEndpointDescriptionParser {
             "http://clarin.eu/fcs/endpoint-description";
     private static final String NS_LEGACY =
             "http://clarin.eu/fcs/1.0/resource-info";
-    
-    private static final String MIMETYPE_HITS = "application/x-clarin-fcs-hits+xml";
-    private static final String MIMETYPE_ADV = "application/x-clarin-fcs-adv+xml";
+
     private static final String LANG_EN = "en";
     private static final String POLICY_SEND_DEFAULT = "send-by-default";
     private static final String POLICY_NEED_REQUEST = "need-to-request";
@@ -309,22 +309,30 @@ public class SimpleEndpointDescriptionParser {
         // sanity check on data views
         boolean hasHitsView = false;
         boolean hasAdvView = false;
+        boolean hasLexView = false;
 
         for (DataView dataView : supportedDataViews) {
-            if (dataView.getMimeType().equals(MIMETYPE_HITS)) {
+            if (dataView.getMimeType().equals(Constants.MIMETYPE_HITS)) {
                 hasHitsView = true;
-            } else if (dataView.getMimeType().equals(MIMETYPE_ADV)) {
+            } else if (dataView.getMimeType().equals(Constants.MIMETYPE_ADV)) {
                 hasAdvView = true;
+            } else if (dataView.getMimeType().equals(Constants.MIMETYPE_LEX)) {
+                hasLexView = true;
             }
         }
         if (!hasHitsView) {
             throw new SRUConfigException("Generic Hits Data View (" +
-                    MIMETYPE_HITS + ") was not declared in <SupportedDataViews>");
+            Constants.MIMETYPE_HITS + ") was not declared in <SupportedDataViews>");
         }
         if (capabilities.contains(Constants.CAP_ADVANCED_SEARCH) && !hasAdvView) {
             throw new SRUConfigException("Endpoint claimes to support " +
                     "Advanced FCS but does not declare Advanced Data View (" +
-                    MIMETYPE_ADV + ") in <SupportedDataViews>");
+                    Constants.MIMETYPE_ADV + ") in <SupportedDataViews>");
+        }
+        if (capabilities.contains(Constants.CAP_LEX_SEARCH) && !hasLexView) {
+            throw new SRUConfigException("Endpoint claimes to support " +
+                    "Lexical FCS but does not declare Lex Data View (" +
+                    Constants.MIMETYPE_LEX + ") in <SupportedDataViews>");
         }
 
         // supported layers
@@ -365,12 +373,7 @@ public class SimpleEndpointDescriptionParser {
                 String type = cleanString(item.getTextContent());
                 if ((type != null) && !type.isEmpty()) {
                     // sanity check on layer types
-                    if (!(type.equals("text") ||
-                            type.equals("lemma") ||
-                            type.equals("pos") ||
-                            type.equals("orth") ||
-                            type.equals("norm") ||
-                            type.equals("phonetic") ||
+                    if (!(Arrays.stream(Constants.FCS_FIELD_TYPES).anyMatch(type::equals) ||
                             type.startsWith("x-"))) {
                         logger.warn("layer type '{}' is not defined by specification", type);
                     }
@@ -430,6 +433,56 @@ public class SimpleEndpointDescriptionParser {
         } // necessary
         logger.debug("L: {}", supportedLayers);
 
+        // supported lex fields
+        List<LexField> supportedLexFields = null;
+        exp = xpath.compile("//ed:SupportedLexFields/ed:SupportedLexField");
+        list = (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
+        if ((list != null) && (list.getLength() > 0)) {
+            logger.debug("parsing supported lex fields");
+            for (int i = 0; i < list.getLength(); i++) {
+                Element item = (Element) list.item(i);
+                String id = getAttribute(item, "id");
+                if (id == null) {
+                    throw new SRUConfigException("Element <SupportedLexField> "
+                            + "must have a proper 'id' attribute");
+                }
+
+                if (xml_ids.contains(id)) {
+                    throw new SRUConfigException("The value of attribute " +
+                            "'id' of element <SupportedLexField> must be " +
+                            "unique: " + id);
+                }
+                xml_ids.add(id);
+
+                String type = cleanString(item.getTextContent());
+                if ((type != null) && !type.isEmpty()) {
+                    // sanity check on layer types
+                    if (!(Arrays.stream(Constants.LEX_FIELD_TYPES).anyMatch(type::equals) ||
+                            type.startsWith("x-"))) {
+                        logger.warn("lex field type '{}' is not defined by specification", type);
+                    }
+                } else {
+                    throw new SRUConfigException("Element <SupportedLexField> " +
+                            "does not define a proper lex field type");
+                }
+
+                if (supportedLexFields == null) {
+                    supportedLexFields = new ArrayList<>(list.getLength());
+                }
+                supportedLexFields.add(new LexField(id, type));
+            }
+        }
+
+        if ((supportedLexFields != null) &&
+                !capabilities.contains(Constants.CAP_LEX_SEARCH)) {
+                logger.warn("Endpoint description has <SupportedLexField> but " +
+                        "does not indicate support for Lexical Search. " +
+                        "Please consider adding capability ({}) to " +
+                        "your endpoint description to make use of layers!",
+                        Constants.CAP_LEX_SEARCH);
+        } // necessary
+        logger.debug("F: {}", supportedLexFields);
+
         boolean hasAuthCap = capabilities.contains(Constants.CAP_AUTHENTICATED_SEARCH);
 
         // resources
@@ -437,8 +490,8 @@ public class SimpleEndpointDescriptionParser {
         list = (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
         final Set<String> pids = new HashSet<>();
         List<ResourceInfo> resources = parseResources(xpath, list, pids,
-                supportedDataViews, supportedLayers, version, hasAdvView,
-                hasAuthCap);
+                supportedDataViews, supportedLayers, supportedLexFields, version,
+                hasAdvView, hasLexView, hasAuthCap);
         if ((resources == null) || resources.isEmpty()) {
             throw new SRUConfigException("No resources where " +
                     "defined in endpoint description");
@@ -452,6 +505,7 @@ public class SimpleEndpointDescriptionParser {
                 capabilities,
                 supportedDataViews,
                 supportedLayers,
+                supportedLexFields,
                 resources,
                 false);
     }
@@ -475,8 +529,8 @@ public class SimpleEndpointDescriptionParser {
 
     private static List<ResourceInfo> parseResources(XPath xpath,
             NodeList nodes, Set<String> pids, List<DataView> supportedDataViews,
-            List<Layer> supportedLayers, int version, boolean hasAdv,
-            boolean hasAuthCap)
+            List<Layer> supportedLayers, List<LexField> supportedLexFields,
+            int version, boolean hasAdv, boolean hasLex, boolean hasAuthCap)
                     throws SRUConfigException, XPathExpressionException {
         List<ResourceInfo> ris = null;
         for (int k = 0; k < nodes.getLength(); k++) {
@@ -490,6 +544,7 @@ public class SimpleEndpointDescriptionParser {
             AvailabilityRestriction availabilityRestriction = AvailabilityRestriction.NONE;
             List<DataView> availableDataViews = null;
             List<Layer> availableLayers = null;
+            List<LexField> availableLexFields = null;
             List<ResourceInfo> sub = null;
 
             pid = getAttribute(node, "pid");
@@ -726,7 +781,7 @@ public class SimpleEndpointDescriptionParser {
                 if ((refs == null) || (refs.length < 1)) {
                     throw new SRUConfigException("Attribute 'ref' on element " +
                             "<AvailableLayers> must contain a whitespace " +
-                            "seperated list of data view references");
+                            "seperated list of layer references");
                 }
 
                 for (String ref2 : refs) {
@@ -755,11 +810,53 @@ public class SimpleEndpointDescriptionParser {
                 }
             }
 
+            exp = xpath.compile("ed:AvailableLexFields");
+            n = (Node) exp.evaluate(node, XPathConstants.NODE);
+            if ((n != null) && (n instanceof Element)) {
+                String ref = getAttribute((Element) n, "ref");
+                if (ref == null) {
+                    throw new SRUConfigException("Element <AvailableLexFields> " +
+                            "must have a 'ref' attribute");
+                }
+                String[] refs = ref.split("\\s+");
+                if ((refs == null) || (refs.length < 1)) {
+                    throw new SRUConfigException("Attribute 'ref' on element " +
+                            "<AvailableLexFields> must contain a whitespace " +
+                            "seperated list of lex field references");
+                }
+
+                for (String ref2 : refs) {
+                    LexField field = null;
+                    for (LexField lf : supportedLexFields) {
+                        if (ref2.equals(lf.getId())) {
+                            field = lf;
+                            break;
+                        }
+                    }
+                    if (field != null) {
+                        if (availableLexFields == null) {
+                            availableLexFields = new ArrayList<>();
+                        }
+                        availableLexFields.add(field);
+                    } else {
+                        throw new SRUConfigException("A lex field with " +
+                                "identifier '" + ref2 +
+                                "' was not defined " + "in <SupportedLexFields>");
+                    }
+                }
+            } else {
+                if (hasLex) {
+                    logger.debug("no <SupportedLexFields> for resource '{}'",
+                            pid);
+                }
+            }
+
             exp = xpath.compile("ed:Resources/ed:Resource");
             list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
             if ((list != null) && (list.getLength() > 0)) {
                 sub = parseResources(xpath, list, pids, supportedDataViews,
-                        supportedLayers, version, hasAdv, hasAuthCap);
+                        supportedLayers, supportedLexFields, version, hasAdv,
+                        hasLex, hasAuthCap);
             }
 
             if (ris == null) {
@@ -772,7 +869,7 @@ public class SimpleEndpointDescriptionParser {
             }
             ris.add(new ResourceInfo(pid, titles, descrs, insts, link, langs,
                     availabilityRestriction, availableDataViews,
-                    availableLayers, sub));
+                    availableLayers, availableLexFields, sub));
         }
         return ris;
     }

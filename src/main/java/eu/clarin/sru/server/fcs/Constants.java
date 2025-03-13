@@ -49,6 +49,7 @@ public final class Constants {
 
     // query types
     public static final String FCS_QUERY_TYPE_FCS          = "fcs";
+    public static final String FCS_QUERY_TYPE_LEX          = "lex";
     public static final String FCS_QUERY_TYPE_CQL          =
             SRUConstants.SRU_QUERY_TYPE_CQL;
     public static final String FCS_QUERY_TYPE_SEARCH_TERMS =
@@ -62,13 +63,93 @@ public final class Constants {
     public static final String FCS_LAYER_TYPE_NORM = "norm";
     public static final String FCS_LAYER_TYPE_PHONETIC = "phonetic";
 
+    public static final String[] FCS_FIELD_TYPES = {
+            FCS_LAYER_TYPE_TEXT,
+            FCS_LAYER_TYPE_LEMMA,
+            FCS_LAYER_TYPE_POS,
+            FCS_LAYER_TYPE_ORTH,
+            FCS_LAYER_TYPE_NORM,
+            FCS_LAYER_TYPE_PHONETIC
+    };
+
+    // FCS lexical field type identifiers
+    public static final String LEX_FIELD_TYPE_ENTRYID = "entryId";
+    public static final String LEX_FIELD_TYPE_LEMMA = "lemma";
+    public static final String LEX_FIELD_TYPE_TRANSLATION = "translation";
+    public static final String LEX_FIELD_TYPE_TRANSCRIPTION = "transcription";
+    public static final String LEX_FIELD_TYPE_PHONETIC = "phonetic";
+    public static final String LEX_FIELD_TYPE_DEFINITION = "definition";
+    public static final String LEX_FIELD_TYPE_ETYMOLOGY = "etymology";
+    public static final String LEX_FIELD_TYPE_CASE = "case";
+    public static final String LEX_FIELD_TYPE_NUMBER = "number";
+    public static final String LEX_FIELD_TYPE_GENDER = "gender";
+    public static final String LEX_FIELD_TYPE_POS = "pos";
+    public static final String LEX_FIELD_TYPE_BASEFORM = "baseform";
+    public static final String LEX_FIELD_TYPE_SEGMENTATION = "segmentation";
+    public static final String LEX_FIELD_TYPE_SENTIMENT = "sentiment";
+    public static final String LEX_FIELD_TYPE_FREQUENCY = "frequency";
+    public static final String LEX_FIELD_TYPE_ANTONYM = "antonym";
+    public static final String LEX_FIELD_TYPE_HYPONYM = "hyponym";
+    public static final String LEX_FIELD_TYPE_HYPERNYM = "hypernym";
+    public static final String LEX_FIELD_TYPE_MERONYM = "meronym";
+    public static final String LEX_FIELD_TYPE_HOLONYM = "holonym";
+    public static final String LEX_FIELD_TYPE_SYNONYM = "synonym";
+    public static final String LEX_FIELD_TYPE_RELATED = "related";
+    public static final String LEX_FIELD_TYPE_REF = "ref";
+    public static final String LEX_FIELD_TYPE_SENSEREF = "senseRef";
+    public static final String LEX_FIELD_TYPE_CITATION = "citation";
+
+    public static final String[] LEX_FIELD_TYPES = {
+            LEX_FIELD_TYPE_ENTRYID,
+            LEX_FIELD_TYPE_LEMMA,
+            LEX_FIELD_TYPE_TRANSLATION,
+            LEX_FIELD_TYPE_TRANSCRIPTION,
+            LEX_FIELD_TYPE_PHONETIC,
+            LEX_FIELD_TYPE_DEFINITION,
+            LEX_FIELD_TYPE_ETYMOLOGY,
+            LEX_FIELD_TYPE_CASE,
+            LEX_FIELD_TYPE_NUMBER,
+            LEX_FIELD_TYPE_GENDER,
+            LEX_FIELD_TYPE_POS,
+            LEX_FIELD_TYPE_BASEFORM,
+            LEX_FIELD_TYPE_SEGMENTATION,
+            LEX_FIELD_TYPE_SENTIMENT,
+            LEX_FIELD_TYPE_FREQUENCY,
+            LEX_FIELD_TYPE_ANTONYM,
+            LEX_FIELD_TYPE_HYPONYM,
+            LEX_FIELD_TYPE_HYPERNYM,
+            LEX_FIELD_TYPE_MERONYM,
+            LEX_FIELD_TYPE_HOLONYM,
+            LEX_FIELD_TYPE_SYNONYM,
+            LEX_FIELD_TYPE_RELATED,
+            LEX_FIELD_TYPE_REF,
+            LEX_FIELD_TYPE_SENSEREF,
+            LEX_FIELD_TYPE_CITATION
+    };
+
     // FCS capability URLs
     public static final URI CAP_BASIC_SEARCH =
             URI.create("http://clarin.eu/fcs/capability/basic-search");
     public static final URI CAP_ADVANCED_SEARCH =
             URI.create("http://clarin.eu/fcs/capability/advanced-search");
+    public static final URI CAP_LEX_SEARCH =
+            URI.create("http://clarin.eu/fcs/capability/lex-search");
     public static final URI CAP_AUTHENTICATED_SEARCH =
             URI.create("http://clarin.eu/fcs/capability/authenticated-search");
+
+    // FCS data view mime types
+    public static final String MIMETYPE_HITS = "application/x-clarin-fcs-hits+xml";
+    public static final String MIMETYPE_ADV = "application/x-clarin-fcs-adv+xml";
+    public static final String MIMETYPE_LEX = "application/x-clarin-fcs-lex+xml";
+
+    // FCS data view namespaces
+    public static final String NS_HITS = "http://clarin.eu/fcs/dataview/hits";
+    public static final String NS_ADV = "http://clarin.eu/fcs/dataview/advanced";
+    public static final String NS_LEX = "http://clarin.eu/fcs/dataview/lex";
+    // default xml namespace prefixes
+    public static final String XML_PREFIX_HITS = "hits";
+    public static final String XML_PREFIX_ADV = "adv";
+    public static final String XML_PREFIX_LEX = "lex";
 
     // FCS request parameters to extract Resource PIDs
     public static final String X_FCS_CONTEXT_KEY = "x-fcs-context";

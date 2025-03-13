@@ -56,6 +56,7 @@ public class ResourceInfo {
     private final AvailabilityRestriction availabilityRestriction;
     private final List<DataView> availableDataViews;
     private final List<Layer> availableLayers;
+    private final List<LexField> availableLexFields;
     private final List<ResourceInfo> subResources;
 
 
@@ -89,6 +90,9 @@ public class ResourceInfo {
      * @param availableLayers
      *            the list if layers available for Advanced Search or
      *            <code>null</code> if not applicable
+     * @param availableLexFields
+     *            the list if lex fields available for Lexical Search or
+     *            <code>null</code> if not applicable
      * @param subResources
      *            a list of resource sub-ordinate to this resource or
      *            <code>null</code> if not applicable
@@ -98,7 +102,7 @@ public class ResourceInfo {
             String landingPageURI, List<String> languages,
             AvailabilityRestriction availabilityRestriction,
             List<DataView> availableDataViews, List<Layer> availableLayers,
-            List<ResourceInfo> subResources) {
+            List<LexField> availableLexFields, List<ResourceInfo> subResources) {
         if (pid == null) {
             throw new NullPointerException("pid == null");
         }
@@ -142,11 +146,18 @@ public class ResourceInfo {
         this.availableDataViews =
                 Collections.unmodifiableList(availableDataViews);
 
-        if ((availableLayers != null) && !availableDataViews.isEmpty()) {
+        if ((availableLayers != null) && !availableLayers.isEmpty()) {
             this.availableLayers =
                     Collections.unmodifiableList(availableLayers);
         } else {
             this.availableLayers = null;
+        }
+
+        if ((availableLexFields != null) && !availableLexFields.isEmpty()) {
+            this.availableLexFields =
+                    Collections.unmodifiableList(availableLexFields);
+        } else {
+            this.availableLexFields = null;
         }
 
         if ((subResources != null) && !subResources.isEmpty()) {
@@ -154,6 +165,48 @@ public class ResourceInfo {
         } else {
             this.subResources = null;
         }
+    }
+
+
+    /**
+     * Constructor.
+     *
+     * @param pid
+     *            the persistent identifier of the resource
+     * @param title
+     *            the title of the resource represented as a map with pairs of
+     *            language code and title
+     * @param description
+     *            the description of the resource represented as a map with
+     *            pairs of language code and description or <code>null</code> if
+     *            not applicable
+     * @param institution
+     *            the institution of the resource represented as a map with
+     *            pairs of language code and institution names or <code>null</code>
+     *            if not applicable
+     * @param landingPageURI
+     *            a URI to the landing page of the resource or <code>null</code>
+     *            if not applicable
+     * @param languages
+     *            the languages represented within this resource represented as
+     *            a list of ISO-632-3 three letter language codes
+     * @param availableDataViews
+     *            the list of available data views for this resource
+     * @param availableLayers
+     *            the list if layers available for Advanced Search or
+     *            <code>null</code> if not applicable
+     * @param subResources
+     *            a list of resource sub-ordinate to this resource or
+     *            <code>null</code> if not applicable
+     */
+    public ResourceInfo(String pid, Map<String, String> title,
+            Map<String, String> description, Map<String, String> institution,
+            String landingPageURI, List<String> languages,
+            List<DataView> availableDataViews, List<Layer> availableLayers,
+            List<ResourceInfo> subResources) {
+        this(pid, title, description, institution, landingPageURI, languages,
+                AvailabilityRestriction.NONE, availableDataViews, availableLayers,
+                null, subResources);
     }
 
 
@@ -326,6 +379,28 @@ public class ResourceInfo {
      */
     public boolean hasAvailableLayers() {
         return (availableLayers != null);
+    }
+
+
+    /**
+     * Get the list of lex fields that are available in Lexical Search for this
+     * resource.
+     *
+     * @return the list of lex fields or <code>null</code>
+     */
+    public List<LexField> getAvailableLexFields() {
+        return availableLexFields;
+    }
+
+
+    /**
+     * Check if any lex fields are available for Lexical Search
+     *
+     * @return <code>true</code> if any lex fields for Lexical Search is available,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasAvailableLexFields() {
+        return (availableLexFields != null);
     }
 
 

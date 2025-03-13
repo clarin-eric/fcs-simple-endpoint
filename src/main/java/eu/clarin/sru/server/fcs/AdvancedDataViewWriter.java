@@ -37,16 +37,13 @@ public class AdvancedDataViewWriter {
     }
     private static final long INITIAL_SEGMENT_ID = 1;
     public static final int NO_HIGHLIGHT = -1;
-    private static final String ADV_PREFIX = "adv";
-    private static final String ADV_NS =
-            "http://clarin.eu/fcs/dataview/advanced";
-    private static final String ADV_MIME_TYPE =
-            "application/x-clarin-fcs-adv+xml";
-    private static final String HITS_MIME_TYPE =
-            "application/x-clarin-fcs-hits+xml";
-    private static final String FCS_HITS_PREFIX = "hits";
-    private static final String FCS_HITS_NS =
-            "http://clarin.eu/fcs/dataview/hits";
+    private static final String ADV_PREFIX = Constants.XML_PREFIX_ADV;
+    private static final String ADV_NS = Constants.NS_ADV;
+    private static final String ADV_MIME_TYPE = Constants.MIMETYPE_ADV;
+    private static final String HITS_MIME_TYPE = Constants.MIMETYPE_HITS;
+    private static final String FCS_HITS_PREFIX = Constants.XML_PREFIX_HITS;
+    private static final String FCS_HITS_NS = Constants.NS_HITS;
+
     private final Unit unit;
     private final List<Segment> segments = new ArrayList<>();
     private final Map<URI, List<Span>> layers = new HashMap<>();

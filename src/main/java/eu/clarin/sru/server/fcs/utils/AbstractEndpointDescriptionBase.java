@@ -23,6 +23,7 @@ import java.util.List;
 import eu.clarin.sru.server.fcs.DataView;
 import eu.clarin.sru.server.fcs.EndpointDescription;
 import eu.clarin.sru.server.fcs.Layer;
+import eu.clarin.sru.server.fcs.LexField;
 
 
 /**
@@ -38,6 +39,7 @@ public abstract class AbstractEndpointDescriptionBase
     protected final List<URI> capabilities;
     protected final List<DataView> supportedDataViews;
     protected final List<Layer> supportedLayers;
+    protected final List<LexField> supportedLexFields;
 
 
     /**
@@ -51,10 +53,12 @@ public abstract class AbstractEndpointDescriptionBase
      *            a list of data views that are supported by this endpoint
      * @param supportedLayers
      *            a list of layers that are supported by this endpoint
+     * @param supportedLexFields
+     *            a list of lex fields that are supported by this endpoint
      */
     protected AbstractEndpointDescriptionBase(int version,
             List<URI> capabilities, List<DataView> supportedDataViews,
-            List<Layer> supportedLayers) {
+            List<Layer> supportedLayers, List<LexField> supportedLexFields) {
         if ((version != 1) && (version != 2)) {
             throw new IllegalArgumentException("version must be either 1 or 2");
         }
@@ -101,6 +105,19 @@ public abstract class AbstractEndpointDescriptionBase
         } else {
             this.supportedLayers = null;
         }
+
+        if ((supportedLexFields != null) && !supportedLexFields.isEmpty()) {
+            for (LexField field : supportedLexFields) {
+                if (field == null) {
+                    throw new IllegalArgumentException(
+                            "supportedLexFields must not contain a 'null' item");
+                }
+            }
+            this.supportedLexFields =
+                    Collections.unmodifiableList(supportedLexFields);
+        } else {
+            this.supportedLexFields = null;
+        }
     }
 
 
@@ -131,6 +148,12 @@ public abstract class AbstractEndpointDescriptionBase
     @Override
     public List<Layer> getSupportedLayers() {
         return supportedLayers;
+    }
+
+
+    @Override
+    public List<LexField> getSupportedLexFields() {
+        return supportedLexFields;
     }
 
 } // abstract class EndpointDescriptionBase
