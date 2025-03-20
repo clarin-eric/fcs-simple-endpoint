@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2013-2022 by
+ * This software is copyright (c) 2013-2025 by
  *  - Leibniz-Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -126,6 +126,17 @@ public interface EndpointDescription {
      * @return the list of lex fields supported in Lexical Search by this endpoint
      */
     public List<LexField> getSupportedLexFields();
+
+
+    /**
+     * Get the list of fonts that are required this endpoint.
+     * <p>
+     * The implementation of this method <em>must</em> be thread-safe.
+     * </p>
+     *
+     * @return the list of fonts required by this endpoint
+     */
+    public List<Font> getRequiredFonts();
 
 
     /**

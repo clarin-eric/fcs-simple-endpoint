@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2013-2022 by
+ * This software is copyright (c) 2013-2025 by
  *  - Leibniz-Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -22,6 +22,7 @@ import java.util.List;
 
 import eu.clarin.sru.server.fcs.DataView;
 import eu.clarin.sru.server.fcs.EndpointDescription;
+import eu.clarin.sru.server.fcs.Font;
 import eu.clarin.sru.server.fcs.Layer;
 import eu.clarin.sru.server.fcs.LexField;
 
@@ -40,6 +41,7 @@ public abstract class AbstractEndpointDescriptionBase
     protected final List<DataView> supportedDataViews;
     protected final List<Layer> supportedLayers;
     protected final List<LexField> supportedLexFields;
+    protected final List<Font> requiredFonts;
 
 
     /**
@@ -55,10 +57,13 @@ public abstract class AbstractEndpointDescriptionBase
      *            a list of layers that are supported by this endpoint
      * @param supportedLexFields
      *            a list of lex fields that are supported by this endpoint
+     * @param requiredFonts
+     *            a list of fonts that are required by this endpoint
      */
     protected AbstractEndpointDescriptionBase(int version,
             List<URI> capabilities, List<DataView> supportedDataViews,
-            List<Layer> supportedLayers, List<LexField> supportedLexFields) {
+            List<Layer> supportedLayers, List<LexField> supportedLexFields,
+            List<Font> requiredFonts) {
         if ((version != 1) && (version != 2)) {
             throw new IllegalArgumentException("version must be either 1 or 2");
         }
@@ -118,6 +123,19 @@ public abstract class AbstractEndpointDescriptionBase
         } else {
             this.supportedLexFields = null;
         }
+
+        if ((requiredFonts != null) && !requiredFonts.isEmpty()) {
+            for (Font font : requiredFonts) {
+                if (font == null) {
+                    throw new IllegalArgumentException(
+                            "requiredFonts must not contain a 'null' item");
+                }
+            }
+            this.requiredFonts =
+                    Collections.unmodifiableList(requiredFonts);
+        } else {
+            this.requiredFonts = null;
+        }
     }
 
 
@@ -154,6 +172,12 @@ public abstract class AbstractEndpointDescriptionBase
     @Override
     public List<LexField> getSupportedLexFields() {
         return supportedLexFields;
+    }
+
+
+    @Override
+    public List<Font> getRequiredFonts() {
+        return requiredFonts;
     }
 
 } // abstract class EndpointDescriptionBase

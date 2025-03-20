@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2013-2022 by
+ * This software is copyright (c) 2013-2025 by
  *  - Leibniz-Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -54,6 +54,8 @@ import eu.clarin.sru.server.fcs.DataView;
 import eu.clarin.sru.server.fcs.DataView.DeliveryPolicy;
 import eu.clarin.sru.server.fcs.ResourceInfo.AvailabilityRestriction;
 import eu.clarin.sru.server.fcs.EndpointDescription;
+import eu.clarin.sru.server.fcs.Font;
+import eu.clarin.sru.server.fcs.Font.DownloadUrl;
 import eu.clarin.sru.server.fcs.Layer;
 import eu.clarin.sru.server.fcs.LexField;
 import eu.clarin.sru.server.fcs.ResourceInfo;
@@ -483,6 +485,89 @@ public class SimpleEndpointDescriptionParser {
         } // necessary
         logger.debug("F: {}", supportedLexFields);
 
+        // required fonts
+        List<Font> requiredFonts = null;
+        exp = xpath.compile("//ed:RequiredFonts/ed:RequiredFont");
+        list = (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
+        if ((list != null) && (list.getLength() > 0)) {
+            logger.debug("parsing required fonts");
+            for (int i = 0; i < list.getLength(); i++) {
+                Element item = (Element) list.item(i);
+                String id = getAttribute(item, "id");
+                if (id == null) {
+                    throw new SRUConfigException("Element <RequiredFont> "
+                            + "must have a proper 'id' attribute");
+                }
+
+                if (xml_ids.contains(id)) {
+                    throw new SRUConfigException("The value of attribute " +
+                            "'id' of element <RequiredFont> must be " +
+                            "unique: " + id);
+                }
+                xml_ids.add(id);
+
+                String name = getAttribute(item, "name");
+                if (name == null) {
+                    throw new SRUConfigException("Element <RequiredFont> "
+                            + "must have a proper 'name' attribute");
+                }
+
+                String description = getAttribute(item, "description");
+
+                String descriptionUrlRaw = getAttribute(item, "description-url");
+                URI descriptionUrl = null;
+                if (descriptionUrlRaw != null) {
+                    descriptionUrl = URI.create(descriptionUrlRaw);
+                }
+
+                String fontFamily = getAttribute(item, "font-family");
+
+                String license = getAttribute(item, "license");
+                if (license == null) {
+                    throw new SRUConfigException("Element <RequiredFont> "
+                            + "must have a proper 'license' attribute");
+                }
+
+                List<URI> licenseUrls = null;
+                String licenseUrlsRaw = getAttribute(item, "license-urls");
+                if (licenseUrlsRaw != null) {
+                    String[] rawUrls = licenseUrlsRaw.split("\\s+");
+                    if ((rawUrls != null) && (rawUrls.length > 1)) {
+                        licenseUrls = new ArrayList<>();
+                        for (String rawUrl : rawUrls) {
+                            licenseUrls.add(URI.create(rawUrl));
+                        }
+                    }
+                }
+
+                List<DownloadUrl> downloadUrls = null;
+                exp = xpath.compile("//ed:DownloadURL");
+                NodeList dlList = (NodeList) exp.evaluate(item, XPathConstants.NODESET);
+                if ((dlList != null) && (dlList.getLength() > 0)) {
+                    downloadUrls = new ArrayList<>(dlList.getLength());
+                    for (int j = 0; j < dlList.getLength(); j++) {
+                        Element dlItem = (Element) list.item(j);
+                        String variant = getAttribute(item, "variant");
+                        String urlRaw = cleanString(dlItem.getTextContent());
+                        URI downloadUrl = URI.create(urlRaw);
+                        downloadUrls.add(new DownloadUrl(downloadUrl, variant));
+                    }
+                }
+                if (downloadUrls == null) {
+                    throw new SRUConfigException("Endpoint must declare " +
+                            "download URLs (<DownloadURL>) if they " +
+                            "specify a <RequiredFont> element!");
+                }
+
+                if (requiredFonts == null) {
+                    requiredFonts = new ArrayList<>(list.getLength());
+                }
+                requiredFonts.add(new Font(id, name, description, descriptionUrl,
+                        fontFamily, license, licenseUrls, downloadUrls));
+            }
+        }
+        logger.debug("FONTS: {}", requiredFonts);
+
         boolean hasAuthCap = capabilities.contains(Constants.CAP_AUTHENTICATED_SEARCH);
 
         // resources
@@ -490,8 +575,8 @@ public class SimpleEndpointDescriptionParser {
         list = (NodeList) exp.evaluate(doc, XPathConstants.NODESET);
         final Set<String> pids = new HashSet<>();
         List<ResourceInfo> resources = parseResources(xpath, list, pids,
-                supportedDataViews, supportedLayers, supportedLexFields, version,
-                hasAdvView, hasLexView, hasAuthCap);
+                supportedDataViews, supportedLayers, supportedLexFields, requiredFonts,
+                version, hasAdvView, hasLexView, hasAuthCap);
         if ((resources == null) || resources.isEmpty()) {
             throw new SRUConfigException("No resources where " +
                     "defined in endpoint description");
@@ -506,6 +591,7 @@ public class SimpleEndpointDescriptionParser {
                 supportedDataViews,
                 supportedLayers,
                 supportedLexFields,
+                requiredFonts,
                 resources,
                 false);
     }
@@ -530,7 +616,8 @@ public class SimpleEndpointDescriptionParser {
     private static List<ResourceInfo> parseResources(XPath xpath,
             NodeList nodes, Set<String> pids, List<DataView> supportedDataViews,
             List<Layer> supportedLayers, List<LexField> supportedLexFields,
-            int version, boolean hasAdv, boolean hasLex, boolean hasAuthCap)
+            List<Font> availableFonts, int version, boolean hasAdv,
+            boolean hasLex, boolean hasAuthCap)
                     throws SRUConfigException, XPathExpressionException {
         List<ResourceInfo> ris = null;
         for (int k = 0; k < nodes.getLength(); k++) {
@@ -545,6 +632,7 @@ public class SimpleEndpointDescriptionParser {
             List<DataView> availableDataViews = null;
             List<Layer> availableLayers = null;
             List<LexField> availableLexFields = null;
+            List<Font> requiredFonts = null;
             List<ResourceInfo> sub = null;
 
             pid = getAttribute(node, "pid");
@@ -851,12 +939,48 @@ public class SimpleEndpointDescriptionParser {
                 }
             }
 
+            exp = xpath.compile("ed:RequiredFonts");
+            n = (Node) exp.evaluate(node, XPathConstants.NODE);
+            if ((n != null) && (n instanceof Element)) {
+                String ref = getAttribute((Element) n, "ref");
+                if (ref == null) {
+                    throw new SRUConfigException("Element <RequiredFonts> " +
+                            "must have a 'ref' attribute");
+                }
+                String[] refs = ref.split("\\s+");
+                if ((refs == null) || (refs.length < 1)) {
+                    throw new SRUConfigException("Attribute 'ref' on element " +
+                            "<RequiredFonts> must contain a whitespace " +
+                            "seperated list of font references");
+                }
+
+                for (String ref2 : refs) {
+                    Font font = null;
+                    for (Font f : availableFonts) {
+                        if (ref2.equals(f.getId())) {
+                            font = f;
+                            break;
+                        }
+                    }
+                    if (font != null) {
+                        if (requiredFonts == null) {
+                            requiredFonts = new ArrayList<>();
+                        }
+                        requiredFonts.add(font);
+                    } else {
+                        throw new SRUConfigException("A font with " +
+                                "identifier '" + ref2 +
+                                "' was not defined " + "in <RequiredFonts>");
+                    }
+                }
+            }
+
             exp = xpath.compile("ed:Resources/ed:Resource");
             list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
             if ((list != null) && (list.getLength() > 0)) {
                 sub = parseResources(xpath, list, pids, supportedDataViews,
-                        supportedLayers, supportedLexFields, version, hasAdv,
-                        hasLex, hasAuthCap);
+                        supportedLayers, supportedLexFields, availableFonts,
+                        version, hasAdv, hasLex, hasAuthCap);
             }
 
             if (ris == null) {
@@ -869,7 +993,7 @@ public class SimpleEndpointDescriptionParser {
             }
             ris.add(new ResourceInfo(pid, titles, descrs, insts, link, langs,
                     availabilityRestriction, availableDataViews,
-                    availableLayers, availableLexFields, sub));
+                    availableLayers, availableLexFields, requiredFonts, sub));
         }
         return ris;
     }

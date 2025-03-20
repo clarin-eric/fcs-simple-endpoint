@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2013-2022 by
+ * This software is copyright (c) 2013-2025 by
  *  - Leibniz-Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -57,6 +57,7 @@ public class ResourceInfo {
     private final List<DataView> availableDataViews;
     private final List<Layer> availableLayers;
     private final List<LexField> availableLexFields;
+    private final List<Font> requiredFonts;
     private final List<ResourceInfo> subResources;
 
 
@@ -93,6 +94,9 @@ public class ResourceInfo {
      * @param availableLexFields
      *            the list if lex fields available for Lexical Search or
      *            <code>null</code> if not applicable
+     * @param requiredFonts
+     *            the list if fonts required for this resource or
+     *            <code>null</code> if not applicable
      * @param subResources
      *            a list of resource sub-ordinate to this resource or
      *            <code>null</code> if not applicable
@@ -102,7 +106,8 @@ public class ResourceInfo {
             String landingPageURI, List<String> languages,
             AvailabilityRestriction availabilityRestriction,
             List<DataView> availableDataViews, List<Layer> availableLayers,
-            List<LexField> availableLexFields, List<ResourceInfo> subResources) {
+            List<LexField> availableLexFields, List<Font> requiredFonts,
+            List<ResourceInfo> subResources) {
         if (pid == null) {
             throw new NullPointerException("pid == null");
         }
@@ -160,6 +165,13 @@ public class ResourceInfo {
             this.availableLexFields = null;
         }
 
+        if ((requiredFonts != null) && !requiredFonts.isEmpty()) {
+            this.requiredFonts =
+                    Collections.unmodifiableList(requiredFonts);
+        } else {
+            this.requiredFonts = null;
+        }
+
         if ((subResources != null) && !subResources.isEmpty()) {
             this.subResources = Collections.unmodifiableList(subResources);
         } else {
@@ -206,7 +218,7 @@ public class ResourceInfo {
             List<ResourceInfo> subResources) {
         this(pid, title, description, institution, landingPageURI, languages,
                 AvailabilityRestriction.NONE, availableDataViews, availableLayers,
-                null, subResources);
+                null, null, subResources);
     }
 
 
@@ -401,6 +413,27 @@ public class ResourceInfo {
      */
     public boolean hasAvailableLexFields() {
         return (availableLexFields != null);
+    }
+
+
+    /**
+     * Get the list of fonts that are required for this resource.
+     *
+     * @return the list of required fonts or <code>null</code>
+     */
+    public List<Font> getRequiredFonts() {
+        return requiredFonts;
+    }
+
+
+    /**
+     * Check if any fonts are required for this resource
+     *
+     * @return <code>true</code> if any fonts are required,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasRequiredFonts() {
+        return (requiredFonts != null);
     }
 
 
