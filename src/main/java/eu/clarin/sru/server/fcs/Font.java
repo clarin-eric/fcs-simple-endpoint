@@ -29,7 +29,6 @@ public class Font {
     private final String name;
     private final String description;
     private final URI descriptionUrl;
-    private final String fontFamily;
     private final String license; // SPDX or custom
     private final List<URI> licenseUrls;
     private final List<DownloadUrl> downloadUrls;
@@ -43,8 +42,6 @@ public class Font {
      *                       applicable
      * @param descriptionUrl the URL to a description of the font or
      *                       <code>null</code> if not applicable
-     * @param fontFamily     the font-family of the font or <code>null</code> if not
-     *                       applicable
      * @param license        the license for using the font (in SPDX format; may
      *                       specify custom licenses, too, then use the
      *                       <code>licenseUrls</code> to provide the actual text of
@@ -55,8 +52,8 @@ public class Font {
      *                       files
      */
     public Font(String id, String name, String description,
-            URI descriptionUrl, String fontFamily, String license,
-            List<URI> licenseUrls, List<DownloadUrl> downloadUrls) {
+            URI descriptionUrl, String license, List<URI> licenseUrls,
+            List<DownloadUrl> downloadUrls) {
         if (id == null) {
             throw new NullPointerException("id == null");
         }
@@ -76,8 +73,6 @@ public class Font {
         // XXX: optional?
         this.description = description;
         this.descriptionUrl = descriptionUrl;
-
-        this.fontFamily = fontFamily;
 
         if (license == null) {
             throw new NullPointerException("license == null");
@@ -140,16 +135,6 @@ public class Font {
     }
 
     /**
-     * Get the font-family name of this font.
-     *
-     * @return a string with the font-family for this font or <code>null</code> if
-     *         not applicable
-     */
-    public String getFontFamily() {
-        return fontFamily;
-    }
-
-    /**
      * Get the SPDX license description of this font.
      *
      * @return a string with an SPDX license expression
@@ -180,21 +165,25 @@ public class Font {
     public static class DownloadUrl {
         private final URI url;
         private final String variant;
+        private final String fontFamily;
 
         /**
          * Constructor.
          *
-         * @param url     the URL to download the font file
-         * @param variant the font variant (e.g., regular, bold, ...), or
-         *                <code>null</code> if not applicable
+         * @param url        the URL to download the font file
+         * @param variant    the font variant (e.g., regular, bold, ...), or
+         *                   <code>null</code> if not applicable
+         * @param fontFamily the font-family of the font or <code>null</code> if not
+         *                   applicable
          */
-        public DownloadUrl(URI url, String variant) {
+        public DownloadUrl(URI url, String variant, String fontFamily) {
             if (url == null) {
                 throw new NullPointerException("url == null");
             }
             this.url = url;
 
             this.variant = variant;
+            this.fontFamily = fontFamily;
         }
 
         /**
@@ -213,6 +202,16 @@ public class Font {
          */
         public String getVariant() {
             return variant;
+        }
+
+        /**
+         * Get the font-family name of this font.
+         *
+         * @return a string with the font-family for this font or <code>null</code> if
+         *         not applicable
+         */
+        public String getFontFamily() {
+            return fontFamily;
         }
     }
 
