@@ -53,6 +53,7 @@ import eu.clarin.sru.server.SRUScanResultSet;
 import eu.clarin.sru.server.SRUSearchEngine;
 import eu.clarin.sru.server.SRUServer;
 import eu.clarin.sru.server.SRUServerConfig;
+import eu.clarin.sru.server.fcs.Font.DownloadUrl;
 import eu.clarin.sru.server.fcs.ResourceInfo.AvailabilityRestriction;
 import eu.clarin.sru.server.fcs.utils.AuthenticationProvider;
 import eu.clarin.sru.server.utils.SRUAuthenticationInfoProviderFactory;
@@ -497,6 +498,47 @@ public abstract class SimpleEndpointSearchEngineBase extends
                 }
                 writer.writeEndElement(); // "SupportedLexFields" element
             }
+
+            // RequiredFonts
+            final List<Font> fonts = endpointDescription.getRequiredFonts();
+            if (fonts != null) {
+                writer.writeStartElement(ED_NS, "RequiredFonts");
+                for (Font font : fonts) {
+                    writer.writeStartElement(ED_NS, "RequiredFont");
+                    writer.writeAttribute("id", font.getId());
+                    writer.writeAttribute("name", font.getName());
+                    if (font.getDescription() != null) {
+                        writer.writeAttribute("description", font.getDescription());
+                    }
+                    if (font.getDescriptionUrl() != null) {
+                        writer.writeAttribute("description-url", font.getDescriptionUrl().toString());
+                    }
+                    writer.writeAttribute("license", font.getLicense());
+                    if (font.getLicenseURLs() != null && !font.getLicenseURLs().isEmpty()) {
+                        StringBuilder sb = new StringBuilder();
+                        for (URI licenseUri : font.getLicenseURLs()) {
+                            if (sb.length() > 0) {
+                                sb.append(" ");
+                            }
+                            sb.append(licenseUri.toString()); // TODO: do we need to check for encoding spaces?!
+                        }
+                        writer.writeAttribute("license-urls", sb.toString());
+                    }
+                    for (DownloadUrl url : font.getDownloadURLs()) {
+                        writer.writeStartElement(ED_NS, "DownloadURL");
+                        if (url.getVariant() != null) {
+                            writer.writeAttribute("variant", url.getVariant());
+                        }
+                        if (url.getFontFamily() != null) {
+                            writer.writeAttribute("font-family", url.getFontFamily());
+                        }
+                        writer.writeCharacters(url.getURL().toString());
+                        writer.writeEndElement(); // "DownloadURL" element
+                    }
+                    writer.writeEndElement(); // "RequiredFont" element
+                }
+                writer.writeEndElement(); // "RequiredFonts" element
+            }
         }
 
         // Resources
@@ -635,6 +677,19 @@ public abstract class SimpleEndpointSearchEngineBase extends
                             sb.append(field.getId());
                         }
                         writer.writeEmptyElement(ED_NS, "AvailableLexFields");
+                        writer.writeAttribute("ref", sb.toString());
+                    }
+
+                    final List<Font> fonts = resource.getRequiredFonts();
+                    if (fonts != null) {
+                        sb = new StringBuilder();
+                        for (Font font : fonts) {
+                            if (sb.length() > 0) {
+                                sb.append(" ");
+                            }
+                            sb.append(font.getId());
+                        }
+                        writer.writeEmptyElement(ED_NS, "RequiredFonts");
                         writer.writeAttribute("ref", sb.toString());
                     }
                 }

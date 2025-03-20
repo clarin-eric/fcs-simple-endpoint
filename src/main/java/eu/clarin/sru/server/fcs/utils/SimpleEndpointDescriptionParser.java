@@ -520,8 +520,6 @@ public class SimpleEndpointDescriptionParser {
                     descriptionUrl = URI.create(descriptionUrlRaw);
                 }
 
-                String fontFamily = getAttribute(item, "font-family");
-
                 String license = getAttribute(item, "license");
                 if (license == null) {
                     throw new SRUConfigException("Element <RequiredFont> "
@@ -541,16 +539,17 @@ public class SimpleEndpointDescriptionParser {
                 }
 
                 List<DownloadUrl> downloadUrls = null;
-                exp = xpath.compile("//ed:DownloadURL");
+                exp = xpath.compile(".//ed:DownloadURL");
                 NodeList dlList = (NodeList) exp.evaluate(item, XPathConstants.NODESET);
                 if ((dlList != null) && (dlList.getLength() > 0)) {
                     downloadUrls = new ArrayList<>(dlList.getLength());
                     for (int j = 0; j < dlList.getLength(); j++) {
-                        Element dlItem = (Element) list.item(j);
-                        String variant = getAttribute(item, "variant");
+                        Element dlItem = (Element) dlList.item(j);
+                        String variant = getAttribute(dlItem, "variant");
+                        String fontFamily = getAttribute(dlItem, "font-family");
                         String urlRaw = cleanString(dlItem.getTextContent());
                         URI downloadUrl = URI.create(urlRaw);
-                        downloadUrls.add(new DownloadUrl(downloadUrl, variant));
+                        downloadUrls.add(new DownloadUrl(downloadUrl, variant, fontFamily));
                     }
                 }
                 if (downloadUrls == null) {
@@ -563,7 +562,7 @@ public class SimpleEndpointDescriptionParser {
                     requiredFonts = new ArrayList<>(list.getLength());
                 }
                 requiredFonts.add(new Font(id, name, description, descriptionUrl,
-                        fontFamily, license, licenseUrls, downloadUrls));
+                        license, licenseUrls, downloadUrls));
             }
         }
         logger.debug("FONTS: {}", requiredFonts);
