@@ -1,5 +1,5 @@
 /**
- * This software is copyright (c) 2013-2022 by
+ * This software is copyright (c) 2013-2025 by
  *  - Leibniz-Institut fuer Deutsche Sprache (http://www.ids-mannheim.de)
  * This is free software. You can redistribute it
  * and/or modify it under the terms described in
@@ -24,6 +24,7 @@ import java.util.List;
 import eu.clarin.sru.server.SRUException;
 import eu.clarin.sru.server.fcs.DataView;
 import eu.clarin.sru.server.fcs.EndpointDescription;
+import eu.clarin.sru.server.fcs.Font;
 import eu.clarin.sru.server.fcs.Layer;
 import eu.clarin.sru.server.fcs.LexField;
 import eu.clarin.sru.server.fcs.ResourceInfo;
@@ -58,6 +59,9 @@ public class SimpleEndpointDescription extends AbstractEndpointDescriptionBase {
      * @param supportedLexFields
      *            a list of lex fields supported for Lexical Search by this
      *            endpoint or <code>null</code>
+     * @param requiredFonts
+     *            a list of fonts required by this endpoint or
+     *            <code>null</code>
      * @param resources
      *            a static list of resource info records
      * @param pidCaseSensitive
@@ -69,9 +73,11 @@ public class SimpleEndpointDescription extends AbstractEndpointDescriptionBase {
             List<DataView> supportedDataViews,
             List<Layer> supportedLayers,
             List<LexField> supportedLexFields,
+            List<Font> requiredFonts,
             List<ResourceInfo> resources,
             boolean pidCaseSensitive) {
-        super(version, capabilities, supportedDataViews, supportedLayers, supportedLexFields);
+        super(version, capabilities, supportedDataViews, supportedLayers,
+                supportedLexFields, requiredFonts);
 
         if (resources == null) {
             throw new NullPointerException("entries == null");
