@@ -73,6 +73,7 @@ public final class Constants {
     };
 
     // FCS lexical field type identifiers
+    public static final String LEX_VIRTUAL_FIELD_TYPE_LANGUAGE = "lang";
     public static final String LEX_FIELD_TYPE_ENTRYID = "entryId";
     public static final String LEX_FIELD_TYPE_LEMMA = "lemma";
     public static final String LEX_FIELD_TYPE_TRANSLATION = "translation";
@@ -100,6 +101,7 @@ public final class Constants {
     public static final String LEX_FIELD_TYPE_CITATION = "citation";
 
     public static final String[] LEX_FIELD_TYPES = {
+            LEX_VIRTUAL_FIELD_TYPE_LANGUAGE,
             LEX_FIELD_TYPE_ENTRYID,
             LEX_FIELD_TYPE_LEMMA,
             LEX_FIELD_TYPE_TRANSLATION,

@@ -456,7 +456,7 @@ public class SimpleEndpointDescriptionParser {
 
                 String type = cleanString(item.getTextContent());
                 if ((type != null) && !type.isEmpty()) {
-                    // sanity check on layer types
+                    // sanity check on lex field types
                     if (!(Arrays.stream(Constants.LEX_FIELD_TYPES).anyMatch(type::equals) ||
                             type.startsWith("x-"))) {
                         logger.warn("lex field type '{}' is not defined by specification", type);
