@@ -46,7 +46,7 @@ public class ResourceInfo {
          */
         PERSONAL_IDENTIFIER
     }
-    
+
     private final String pid;
     private final Map<String, String> title;
     private final Map<String, String> description;
