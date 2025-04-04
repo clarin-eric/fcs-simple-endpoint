@@ -1,5 +1,26 @@
 # Changelog
 
+# [1.9.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.9.0) - 2025-04-04
+
+- Additions:
+  - Add support for new LexFCS extension:
+    - Define Lex field types, lex capability
+    - LexCQL query parser (`.parser_lex` subpackage), Data View writer + helper
+    - Integrate Lex (fields) support into whole machinery, e.g., register `LexCQLQueryParser` by default, support in `SimpleEndpointDescriptionParser` and `SimpleEndpointSearchEngineBase`
+
+- Changed:
+  - Reuse existing SRU constants instead of declaring them again.
+  - Update a few copyright notices in source file headers.
+  - Add `https://clarin-eric.github.io/fcs-ql/apidocs/` (fcs-ql) to `mvn site` javadocs report
+
+- Dependencies:
+  - Bump [`fcs-ql`](https://github.com/clarin-eric/fcs-ql) to `1.0.0`
+  - Bump [`sru-server`](https://github.com/clarin-eric/fcs-sru-server) to `1.12.0`
+  - Bump `org.bouncycastle` to `1.80`
+  - Bump `com.auth0:java-jwt` to `4.5.0`
+  - Bump `org.slf4j` to `2.0.17`
+  - Bump Maven build plugin versions
+
 # [1.8.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.8.0) - 2024-12-06
 
 - Additions:
