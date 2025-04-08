@@ -226,6 +226,18 @@ public class LexDataViewWriter {
                 case "lang":
                     return XMLConstants.XML_NS_PREFIX + ":" + name;
 
+                // case-sensitivity
+                case "languri":
+                    return "langUri";
+                case "idrefs":
+                    return "idRefs";
+                case "vocabref":
+                    return "vocabRef";
+                case "vocabvalueref":
+                    return "vocabValueRef";
+                case "sourceref":
+                    return "sourceRef";
+
                 // valid keys
                 case "xml:id":
                 case "xml:lang":
