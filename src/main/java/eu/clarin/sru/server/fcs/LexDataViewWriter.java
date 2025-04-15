@@ -83,36 +83,28 @@ public class LexDataViewWriter {
         addValue(fieldType, value, null);
     }
 
-    @SuppressWarnings("serial")
     public void addValue(String fieldType, String value, String attrName1, String attrValue1) {
-        addValue(fieldType, value, new HashMap<String, String>(1) {
-            {
-                put(attrName1, attrValue1);
-            }
-        });
+
+        final Map<String, String> attributes = new HashMap<>(3);
+        attributes.put(attrName1, attrValue1);
+        addValue(fieldType, value, attributes);
     }
 
-    @SuppressWarnings("serial")
     public void addValue(String fieldType, String value, String attrName1, String attrValue1, String attrName2,
             String attrValue2) {
-        addValue(fieldType, value, new HashMap<String, String>(2) {
-            {
-                put(attrName1, attrValue1);
-                put(attrName2, attrValue2);
-            }
-        });
+        final Map<String, String> attributes = new HashMap<>(3);
+        attributes.put(attrName1, attrValue1);
+        attributes.put(attrName2, attrValue2);
+        addValue(fieldType, value, attributes);
     }
 
-    @SuppressWarnings("serial")
     public void addValue(String fieldType, String value, String attrName1, String attrValue1, String attrName2,
             String attrValue2, String attrName3, String attrValue3) {
-        addValue(fieldType, value, new HashMap<String, String>(3) {
-            {
-                put(attrName1, attrValue1);
-                put(attrName2, attrValue2);
-                put(attrName3, attrValue3);
-            }
-        });
+        final Map<String, String> attributes = new HashMap<>(3);
+        attributes.put(attrName1, attrValue1);
+        attributes.put(attrName2, attrValue2);
+        attributes.put(attrName3, attrValue3);
+        addValue(fieldType, value, attributes);
     }
 
     /**
