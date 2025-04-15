@@ -27,7 +27,6 @@ import java.util.List;
 public class Font {
     private final String id;
     private final String name;
-    private final String description;
     private final URI descriptionUrl;
     private final String license; // SPDX or custom
     private final List<URI> licenseUrls;
@@ -38,8 +37,6 @@ public class Font {
      *
      * @param id             the identifier for this font
      * @param name           the name of the font
-     * @param description    the description of the font or <code>null</code> if not
-     *                       applicable
      * @param descriptionUrl the URL to a description of the font or
      *                       <code>null</code> if not applicable
      * @param license        the license for using the font (in SPDX format; may
@@ -51,8 +48,7 @@ public class Font {
      * @param downloadUrls   a list of download URLs to retrieve the actual font
      *                       files
      */
-    public Font(String id, String name, String description,
-            URI descriptionUrl, String license, List<URI> licenseUrls,
+    public Font(String id, String name, URI descriptionUrl, String license, List<URI> licenseUrls,
             List<DownloadUrl> downloadUrls) {
         if (id == null) {
             throw new NullPointerException("id == null");
@@ -70,8 +66,6 @@ public class Font {
         }
         this.name = name;
 
-        // XXX: optional?
-        this.description = description;
         this.descriptionUrl = descriptionUrl;
 
         if (license == null) {
@@ -113,15 +107,6 @@ public class Font {
      */
     public String getName() {
         return name;
-    }
-
-    /**
-     * Get the description of this font.
-     *
-     * @return the description of this font or <code>null</code> if not applicable
-     */
-    public String getDescription() {
-        return description;
     }
 
     /**

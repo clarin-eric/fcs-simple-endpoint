@@ -512,8 +512,6 @@ public class SimpleEndpointDescriptionParser {
                             + "must have a proper 'name' attribute");
                 }
 
-                String description = getAttribute(item, "description");
-
                 String descriptionUrlRaw = getAttribute(item, "description-url");
                 URI descriptionUrl = null;
                 if (descriptionUrlRaw != null) {
@@ -561,8 +559,8 @@ public class SimpleEndpointDescriptionParser {
                 if (requiredFonts == null) {
                     requiredFonts = new ArrayList<>(list.getLength());
                 }
-                requiredFonts.add(new Font(id, name, description, descriptionUrl,
-                        license, licenseUrls, downloadUrls));
+                requiredFonts.add(new Font(id, name, descriptionUrl, license, licenseUrls,
+                        downloadUrls));
             }
         }
         logger.debug("FONTS: {}", requiredFonts);

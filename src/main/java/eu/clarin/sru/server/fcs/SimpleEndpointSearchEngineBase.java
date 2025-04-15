@@ -507,9 +507,6 @@ public abstract class SimpleEndpointSearchEngineBase extends
                     writer.writeStartElement(ED_NS, "RequiredFont");
                     writer.writeAttribute("id", font.getId());
                     writer.writeAttribute("name", font.getName());
-                    if (font.getDescription() != null) {
-                        writer.writeAttribute("description", font.getDescription());
-                    }
                     if (font.getDescriptionUrl() != null) {
                         writer.writeAttribute("description-url", font.getDescriptionUrl().toString());
                     }
