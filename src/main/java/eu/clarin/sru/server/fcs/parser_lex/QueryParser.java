@@ -179,10 +179,10 @@ public class QueryParser {
                     }
 
                     // build tree
-                    QueryNode node = (QueryNode) children.removeFirst();
+                    QueryNode node = (QueryNode) children.remove(0);
                     while (children.size() >= 2) {
-                        RBoolean rBoolean = (RBoolean) children.removeFirst();
-                        QueryNode other = (QueryNode) children.removeFirst();
+                        RBoolean rBoolean = (RBoolean) children.remove(0);
+                        QueryNode other = (QueryNode) children.remove(0);
                         node = new SearchClauseGroup(node, rBoolean, other);
                     }
                     if (!children.isEmpty()) {
