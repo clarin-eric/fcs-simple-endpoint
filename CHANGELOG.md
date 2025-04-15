@@ -1,5 +1,13 @@
 # Changelog
 
+# [1.9.1](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.9.1) - 2025-04-15
+
+- Bug Fixes:
+  - Fixed Java 8 version code compatibility
+
+- Changes:
+  - Strict Java 8 version check by using strict [maven compile release configuration](https://maven.apache.org/plugins/maven-compiler-plugin/examples/set-compiler-release.html), fails when code uses newer features!
+
 # [1.9.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.9.0) - 2025-04-04
 
 - Additions:
@@ -8,7 +16,7 @@
     - LexCQL query parser (`.parser_lex` subpackage), Data View writer + helper
     - Integrate Lex (fields) support into whole machinery, e.g., register `LexCQLQueryParser` by default, support in `SimpleEndpointDescriptionParser` and `SimpleEndpointSearchEngineBase`
 
-- Changed:
+- Changes:
   - Reuse existing SRU constants instead of declaring them again.
   - Update a few copyright notices in source file headers.
   - Add `https://clarin-eric.github.io/fcs-ql/apidocs/` (fcs-ql) to `mvn site` javadocs report
