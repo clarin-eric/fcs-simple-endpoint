@@ -1,5 +1,11 @@
 # Changelog
 
+# [1.10.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.10.0) - 2025-04-15
+
+- Dependencies:
+  - **BREAKING** Bump `javax.servlet` to `javax.servlet-api:4.0.1` (see [issue](https://github.com/clarin-eric/fcs-simple-endpoint/issues/4))
+  - Bump [`sru-server`](https://github.com/clarin-eric/fcs-sru-server) to `1.13.0` 
+
 # [1.9.1](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.9.1) - 2025-04-15
 
 - Bug Fixes:
