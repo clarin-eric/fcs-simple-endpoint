@@ -16,7 +16,6 @@
  */
 package eu.clarin.sru.server.fcs.parser_lex;
 
-import java.text.Normalizer;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,18 +26,15 @@ import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.clarin.sru.fcs.qlparser.LexLexer;
 import eu.clarin.sru.fcs.qlparser.LexParser;
-import eu.clarin.sru.fcs.qlparser.LexParserBaseVisitor;
 import eu.clarin.sru.fcs.qlparser.LexParser.Boolean_modifiedContext;
 import eu.clarin.sru.fcs.qlparser.LexParser.Boolean_queryContext;
 import eu.clarin.sru.fcs.qlparser.LexParser.IndexContext;
@@ -52,6 +48,7 @@ import eu.clarin.sru.fcs.qlparser.LexParser.Relation_modifiedContext;
 import eu.clarin.sru.fcs.qlparser.LexParser.Search_clauseContext;
 import eu.clarin.sru.fcs.qlparser.LexParser.Search_termContext;
 import eu.clarin.sru.fcs.qlparser.LexParser.SubqueryContext;
+import eu.clarin.sru.fcs.qlparser.LexParserBaseVisitor;
 
 /**
  * A LexCQL query parser that produces LexCQL expression trees.
@@ -427,20 +424,6 @@ public class QueryParser {
             return null;
         }
 
-    }
-
-    private static int getChildIndex(ParserRuleContext ctx, int tokenType, int start) {
-        if ((start >= 0) && (start < ctx.getChildCount())) {
-            for (int i = start; i < ctx.getChildCount(); i++) {
-                final ParseTree o = ctx.getChild(i);
-                if (o instanceof TerminalNode) {
-                    if (((TerminalNode) o).getSymbol().getType() == tokenType) {
-                        return i;
-                    }
-                }
-            }
-        }
-        return -1;
     }
 
     private static String unquoteString(String s, char[] buf) {
