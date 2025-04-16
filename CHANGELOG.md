@@ -1,5 +1,10 @@
 # Changelog
 
+# [1.11.2](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.11.2) - 2025-04-16
+
+- Dependencies:
+  - Bump [`sru-ql`](https://github.com/clarin-eric/fcs-ql) to `2.0.1` (fix NOT expression nesting)
+
 # [1.11.1](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.11.1) - 2025-04-16
 
 - Bug Fixes:
