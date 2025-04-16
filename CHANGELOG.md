@@ -1,5 +1,10 @@
 # Changelog
 
+# [1.11.1](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.11.1) - 2025-04-16
+
+- Bug Fixes:
+  - Add `]` and `}` escaped special regular expression characters to FCS-QL QueryParser. (changes due to [1.11.0](#1110---2025-04-16))
+
 # [1.11.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.11.0) - 2025-04-16
 
 - Changes:
