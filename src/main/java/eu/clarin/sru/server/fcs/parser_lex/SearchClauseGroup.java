@@ -75,11 +75,11 @@ public class SearchClauseGroup extends QueryNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("(");
+        sb.append('(');
         sb.append(nodeType.toDisplayString());
-        sb.append(" ");
-        sb.append(leftChild).append(" ").append(r_boolean).append(" ").append(rightChild);
-        sb.append(")");
+        sb.append(' ');
+        sb.append(leftChild).append(' ').append(r_boolean).append(' ').append(rightChild);
+        sb.append(')');
         return sb.toString();
     }
 

@@ -230,13 +230,13 @@ public abstract class QueryNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("(").append(nodeType.toDisplayString());
+        sb.append('(').append(nodeType.toDisplayString());
         if (!children.isEmpty()) {
             for (QueryNode child : children) {
-                sb.append(" ").append(child);
+                sb.append(' ').append(child);
             }
         }
-        sb.append(")");
+        sb.append(')');
         return sb.toString();
     }
 

@@ -77,30 +77,30 @@ public class QuerySegment extends QueryNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("(");
+        sb.append('(');
         sb.append(nodeType.toDisplayString());
-        sb.append(" ");
+        sb.append(' ');
         if (minOccurs != 1) {
             sb.append("@min=");
             if (minOccurs == QueryNode.OCCURS_UNBOUNDED) {
-                sb.append("*");
+                sb.append('*');
             } else {
                 sb.append(minOccurs);
             }
-            sb.append(" ");
+            sb.append(' ');
         }
         if (maxOccurs != 1) {
             sb.append("@max=");
             if (maxOccurs == QueryNode.OCCURS_UNBOUNDED) {
-                sb.append("*");
+                sb.append('*');
             } else {
                 sb.append(maxOccurs);
             }
-            sb.append(" ");
+            sb.append(' ');
 
         }
         sb.append(children.get(0));
-        sb.append(")");
+        sb.append(')');
         return sb.toString();
     }
 

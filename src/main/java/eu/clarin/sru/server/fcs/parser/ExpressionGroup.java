@@ -36,10 +36,11 @@ public class ExpressionGroup extends QueryNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("(")
+        sb.append('(')
             .append(nodeType.toDisplayString())
+            .append(' ')
             .append(children.get(0))
-            .append(")");
+            .append(')');
         return sb.toString();
     }
 

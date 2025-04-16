@@ -51,9 +51,9 @@ public class Subquery extends QueryNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("(");
+        sb.append('(');
         sb.append(nodeType.toDisplayString());
-        sb.append(" ");
+        sb.append(' ');
         if (inParentheses) {
             sb.append("\"(\" ");
         }
@@ -61,7 +61,7 @@ public class Subquery extends QueryNode {
         if (inParentheses) {
             sb.append(" \")\"");
         }
-        sb.append(")");
+        sb.append(')');
         return sb.toString();
     }
 

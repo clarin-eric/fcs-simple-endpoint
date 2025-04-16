@@ -63,16 +63,16 @@ public class Relation extends QueryNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("(");
+        sb.append('(');
         sb.append(nodeType.toDisplayString());
-        sb.append(" ");
+        sb.append(' ');
         sb.append(relation);
         if (modifiers != null) {
             for (Modifier modifier : modifiers) {
-                sb.append(" ").append(modifier);
+                sb.append(' ').append(modifier);
             }
         }
-        sb.append(")");
+        sb.append(')');
         return sb.toString();
     }
 

@@ -82,17 +82,17 @@ public class SearchClause extends QueryNode {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("(");
+        sb.append('(');
         sb.append(nodeType.toDisplayString());
-        sb.append(" ");
+        sb.append(' ');
         if (index != null) {
-            sb.append(index).append(" ");
+            sb.append(index).append(' ');
         }
         if (relation != null) {
-            sb.append(relation).append(" ");
+            sb.append(relation).append(' ');
         }
         sb.append(search_term);
-        sb.append(")");
+        sb.append(')');
         return sb.toString();
     }
 
