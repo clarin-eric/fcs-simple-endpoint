@@ -1,5 +1,13 @@
 # Changelog
 
+# [1.11.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.11.0) - 2025-04-16
+
+- Changes:
+  - Some internal code cleanup
+
+- Dependencies:
+  - **BREAKING** Bump [`sru-ql`](https://github.com/clarin-eric/fcs-ql) to `2.0.0` (changes and fixes to FCS-QL syntax)
+
 # [1.10.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.10.0) - 2025-04-15
 
 - Dependencies:
