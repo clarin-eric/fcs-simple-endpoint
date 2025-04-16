@@ -498,7 +498,7 @@ public class QueryParser {
             super.visitExpression_group(ctx);
 
             QueryNode expression = (QueryNode) stack.pop();
-            stack.push( new ExpressionGroup(expression));
+            stack.push(new ExpressionGroup(expression));
             if (logger.isTraceEnabled()) {
                 logger.trace("visitExpression_group/exit: stack={}", stack);
             }
@@ -521,7 +521,7 @@ public class QueryParser {
                 while (stack.size() > pos) {
                     children.add(0, (QueryNode) stack.pop());
                 }
-                stack.push( new ExpressionOr(children));
+                stack.push(new ExpressionOr(children));
             } else {
                 throw new ExpressionTreeBuilderException(
                         "visitExpression_or is empty!");
