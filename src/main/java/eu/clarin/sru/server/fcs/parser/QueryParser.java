@@ -854,8 +854,14 @@ public class QueryParser {
                 case '{':   /* regex: opening curly brace */
                     sb.append("\\{");
                     break;
+                case '}':   /* regex: closing curly brace */
+                    sb.append("\\}");
+                    break;
                 case '[':   /* regex: opening square bracket */
                     sb.append("\\[");
+                    break;
+                case ']':   /* regex: closing square bracket */
+                    sb.append("\\]");
                     break;
                 case '|':   /* regex: vertical bar */
                     sb.append("\\|");
