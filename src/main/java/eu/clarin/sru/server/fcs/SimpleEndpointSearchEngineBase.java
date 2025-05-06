@@ -118,7 +118,7 @@ public abstract class SimpleEndpointSearchEngineBase extends
         logger.debug("initializing search engine implementation");
         doInit(context, config, parserReqistryBuilder, params);
 
-        logger.debug("initizalizing endpoint description");
+        logger.debug("initializing endpoint description");
         this.endpointDescription =
                 createEndpointDescription(context, config, params);
         if (this.endpointDescription == null) {
