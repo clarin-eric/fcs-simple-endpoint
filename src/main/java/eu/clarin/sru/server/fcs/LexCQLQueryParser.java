@@ -27,9 +27,9 @@ import eu.clarin.sru.server.SRUQuery;
 import eu.clarin.sru.server.SRUQueryBase;
 import eu.clarin.sru.server.SRUQueryParser;
 import eu.clarin.sru.server.SRUVersion;
-import eu.clarin.sru.server.fcs.parser_lex.QueryNode;
-import eu.clarin.sru.server.fcs.parser_lex.QueryParser;
-import eu.clarin.sru.server.fcs.parser_lex.QueryParserException;
+import eu.clarin.sru.fcs.qlparser.lex.QueryNode;
+import eu.clarin.sru.fcs.qlparser.lex.QueryParser;
+import eu.clarin.sru.fcs.qlparser.QueryParserException;
 
 public class LexCQLQueryParser implements SRUQueryParser<QueryNode> {
     private static final String PARAM_QUERY = "query";

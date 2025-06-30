@@ -27,9 +27,9 @@ import eu.clarin.sru.server.SRUQuery;
 import eu.clarin.sru.server.SRUQueryBase;
 import eu.clarin.sru.server.SRUQueryParser;
 import eu.clarin.sru.server.SRUVersion;
-import eu.clarin.sru.server.fcs.parser.QueryNode;
-import eu.clarin.sru.server.fcs.parser.QueryParser;
-import eu.clarin.sru.server.fcs.parser.QueryParserException;
+import eu.clarin.sru.fcs.qlparser.fcs.QueryNode;
+import eu.clarin.sru.fcs.qlparser.fcs.QueryParser;
+import eu.clarin.sru.fcs.qlparser.QueryParserException;
 
 public class FCSQueryParser implements SRUQueryParser<QueryNode> {
     private static final String PARAM_QUERY = "query";
