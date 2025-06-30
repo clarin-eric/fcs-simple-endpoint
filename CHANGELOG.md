@@ -1,9 +1,19 @@
 # Changelog
 
+# [2.0.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-2.0.0) - 2025-06-30
+
+- Changes:
+  - **BREAKING**: Move `QueryParser` and related classed to [`fcs-ql`](https://github.com/clarin-eric/fcs-ql) dependency. See [Changelog](https://github.com/clarin-eric/fcs-ql/blob/main/CHANGELOG.md#300---2025-06-30) for more details on namespace changes.
+    - `eu.clarin.sru.server.fcs.parser.*` → `eu.clarin.sru.fcs.qlparser.fcs.*` (FCS-QL)
+    - `eu.clarin.sru.server.fcs.parser_lex.*` → `eu.clarin.sru.fcs.qlparser.lex.*` (LexCQL)
+
+- Dependencies:
+  - Bump [`fcs-ql`](https://github.com/clarin-eric/fcs-ql) to `3.0.0` (`QueryParser` move and refactoring)
+
 # [1.11.2](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.11.2) - 2025-04-16
 
 - Dependencies:
-  - Bump [`sru-ql`](https://github.com/clarin-eric/fcs-ql) to `2.0.1` (fix NOT expression nesting)
+  - Bump [`fcs-ql`](https://github.com/clarin-eric/fcs-ql) to `2.0.1` (fix NOT expression nesting)
 
 # [1.11.1](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.11.1) - 2025-04-16
 
@@ -16,7 +26,7 @@
   - Some internal code cleanup
 
 - Dependencies:
-  - **BREAKING** Bump [`sru-ql`](https://github.com/clarin-eric/fcs-ql) to `2.0.0` (changes and fixes to FCS-QL syntax)
+  - **BREAKING** Bump [`fcs-ql`](https://github.com/clarin-eric/fcs-ql) to `2.0.0` (changes and fixes to FCS-QL syntax)
 
 # [1.10.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-1.10.0) - 2025-04-15
 
