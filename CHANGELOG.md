@@ -1,11 +1,13 @@
 # Changelog
 
-# [2.0.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-2.0.0) - 2025-06-30
+# [2.0.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-2.0.0) - 2025-11-17
 
 - Changes:
   - **BREAKING**: Move `QueryParser` and related classed to [`fcs-ql`](https://github.com/clarin-eric/fcs-ql) dependency. See [Changelog](https://github.com/clarin-eric/fcs-ql/blob/main/CHANGELOG.md#300---2025-06-30) for more details on namespace changes.
     - `eu.clarin.sru.server.fcs.parser.*` → `eu.clarin.sru.fcs.qlparser.fcs.*` (FCS-QL)
     - `eu.clarin.sru.server.fcs.parser_lex.*` → `eu.clarin.sru.fcs.qlparser.lex.*` (LexCQL)
+    - `eu.clarin.sru.server.fcs.parser*.QueryParserException` → `eu.clarin.sru.fcs.qlparser.QueryParserException`
+  - Add support for `ExampleQuery` element for `Resource`s in the `EndpointDescription`
 
 - Dependencies:
   - Bump [`fcs-ql`](https://github.com/clarin-eric/fcs-ql) to `3.0.0` (`QueryParser` move and refactoring)
