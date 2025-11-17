@@ -141,7 +141,7 @@ public class ResourceInfo {
         this.availabilityRestriction = availabilityRestriction;
 
         if (availableDataViews == null) {
-            throw new IllegalArgumentException("availableDataViews == null");
+            throw new NullPointerException("availableDataViews == null");
         }
         this.availableDataViews =
                 Collections.unmodifiableList(availableDataViews);
