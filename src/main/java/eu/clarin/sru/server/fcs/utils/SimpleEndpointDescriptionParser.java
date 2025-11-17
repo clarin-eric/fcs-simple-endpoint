@@ -54,6 +54,7 @@ import eu.clarin.sru.server.fcs.DataView;
 import eu.clarin.sru.server.fcs.DataView.DeliveryPolicy;
 import eu.clarin.sru.server.fcs.ResourceInfo.AvailabilityRestriction;
 import eu.clarin.sru.server.fcs.EndpointDescription;
+import eu.clarin.sru.server.fcs.ExampleQuery;
 import eu.clarin.sru.server.fcs.Layer;
 import eu.clarin.sru.server.fcs.LexField;
 import eu.clarin.sru.server.fcs.ResourceInfo;
@@ -545,6 +546,7 @@ public class SimpleEndpointDescriptionParser {
             List<DataView> availableDataViews = null;
             List<Layer> availableLayers = null;
             List<LexField> availableLexFields = null;
+            List<ExampleQuery> exampleQueries = null;
             List<ResourceInfo> sub = null;
 
             pid = getAttribute(node, "pid");
@@ -851,6 +853,67 @@ public class SimpleEndpointDescriptionParser {
                 }
             }
 
+            exp = xpath.compile("ed:ExampleQuery");
+            list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
+            if ((list != null) && (list.getLength() > 0)) {
+                for (int i = 0; i < list.getLength(); i++) {
+                    Element n2 = (Element) list.item(i);
+
+                    String type = getAttribute((Element) n2, "type");
+                    if (type == null) {
+                        throw new SRUConfigException("Element <ExampleQuery> " +
+                                "must have a 'type' attribute");
+                    }
+                    XPathExpression exp2 = xpath.compile("ed:Query");
+                    Node n3 = (Node) exp2.evaluate(n2, XPathConstants.NODE);
+                    String query = cleanString(n3.getTextContent());
+                    if (query == null) {
+                        throw new SRUConfigException("Element <Query> of <ExampleQuery> " +
+                                "must have a content");
+                    }
+
+                    Map<String, String> descrs2 = new HashMap<>();
+                    exp2 = xpath.compile("ed:Description");
+                    NodeList list2 = (NodeList) exp2.evaluate(n2, XPathConstants.NODESET);
+                    if ((list2 != null) && (list2.getLength() > 0)) {
+                        for (int i2 = 0; i2 < list2.getLength(); i2++) {
+                            Element n4 = (Element) list2.item(i2);
+
+                            String lang = getLangAttribute(n4);
+                            if (lang == null) {
+                                throw new SRUConfigException("Element <Description> " +
+                                        "of <ExampleQuery> must have a proper 'xml:lang' attribute");
+
+                            }
+                            String desc = cleanString(n4.getTextContent());
+
+                            if (descrs2.containsKey(lang)) {
+                                logger.warn("description for example query with language '{}' " +
+                                        "already exists", lang);
+                            } else {
+                                logger.debug("description (query): '{}' '{}'", lang, desc);
+                                descrs2.put(lang, desc);
+                            }
+                        }
+                        if ((descrs2 != null) && !descrs2.containsKey(LANG_EN)) {
+                            throw new SRUConfigException("A <Description> for <ExampleQuery> " +
+                                        "with language 'en' is mandatory");
+                        }
+                    }
+                    if (descrs2 == null || descrs2.isEmpty()) {
+                        throw new SRUConfigException(
+                                    "A <Description> for <ExampleQuery> is mandatory");
+                    }
+
+                    ExampleQuery eq = new ExampleQuery(query, type, descrs2);
+                    if (exampleQueries == null) {
+                        exampleQueries = new ArrayList<>();
+                    }
+                    exampleQueries.add(eq);
+                }
+            }
+            logger.debug("ExampleQueries: {}", exampleQueries);
+
             exp = xpath.compile("ed:Resources/ed:Resource");
             list = (NodeList) exp.evaluate(node, XPathConstants.NODESET);
             if ((list != null) && (list.getLength() > 0)) {
@@ -869,7 +932,7 @@ public class SimpleEndpointDescriptionParser {
             }
             ris.add(new ResourceInfo(pid, titles, descrs, insts, link, langs,
                     availabilityRestriction, availableDataViews,
-                    availableLayers, availableLexFields, sub));
+                    availableLayers, availableLexFields, exampleQueries, sub));
         }
         return ris;
     }

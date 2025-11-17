@@ -57,6 +57,7 @@ public class ResourceInfo {
     private final List<DataView> availableDataViews;
     private final List<Layer> availableLayers;
     private final List<LexField> availableLexFields;
+    private final List<ExampleQuery> exampleQueries;
     private final List<ResourceInfo> subResources;
 
 
@@ -91,6 +92,9 @@ public class ResourceInfo {
      *            the list if layers available for Advanced Search or
      *            <code>null</code> if not applicable
      * @param availableLexFields
+     *            the list if example queries are available for this resource or
+     *            <code>null</code> if not applicable
+     * @param exampleQueries
      *            the list if lex fields available for Lexical Search or
      *            <code>null</code> if not applicable
      * @param subResources
@@ -102,7 +106,8 @@ public class ResourceInfo {
             String landingPageURI, List<String> languages,
             AvailabilityRestriction availabilityRestriction,
             List<DataView> availableDataViews, List<Layer> availableLayers,
-            List<LexField> availableLexFields, List<ResourceInfo> subResources) {
+            List<LexField> availableLexFields, List<ExampleQuery> exampleQueries,
+            List<ResourceInfo> subResources) {
         if (pid == null) {
             throw new NullPointerException("pid == null");
         }
@@ -160,6 +165,13 @@ public class ResourceInfo {
             this.availableLexFields = null;
         }
 
+        if ((exampleQueries != null) && !exampleQueries.isEmpty()) {
+            this.exampleQueries =
+                    Collections.unmodifiableList(exampleQueries);
+        } else {
+            this.exampleQueries = null;
+        }
+
         if ((subResources != null) && !subResources.isEmpty()) {
             this.subResources = Collections.unmodifiableList(subResources);
         } else {
@@ -206,7 +218,7 @@ public class ResourceInfo {
             List<ResourceInfo> subResources) {
         this(pid, title, description, institution, landingPageURI, languages,
                 AvailabilityRestriction.NONE, availableDataViews, availableLayers,
-                null, subResources);
+                null, null, subResources);
     }
 
 
@@ -401,6 +413,27 @@ public class ResourceInfo {
      */
     public boolean hasAvailableLexFields() {
         return (availableLexFields != null);
+    }
+
+
+    /**
+     * Get the list of example queries that are available for this resource.
+     *
+     * @return the list of lex fields or <code>null</code>
+     */
+    public List<ExampleQuery> getExampleQueries() {
+        return exampleQueries;
+    }
+
+
+    /**
+     * Check if any example queries are available for this resource.
+     *
+     * @return <code>true</code> if any example queries are available,
+     *         <code>false</code> otherwise
+     */
+    public boolean hasExampleQueries() {
+        return (exampleQueries != null);
     }
 
 

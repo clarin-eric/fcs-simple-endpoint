@@ -637,6 +637,31 @@ public abstract class SimpleEndpointSearchEngineBase extends
                         writer.writeEmptyElement(ED_NS, "AvailableLexFields");
                         writer.writeAttribute("ref", sb.toString());
                     }
+
+                    final List<ExampleQuery> queries = resource.getExampleQueries();
+                    if (queries != null) {
+                        for (ExampleQuery query : queries) {
+                            writer.writeStartElement(ED_NS, "ExampleQuery");
+                            writer.writeAttribute("type", query.getQueryType());
+
+                            writer.writeStartElement(ED_NS, "Query");
+                            writer.writeCharacters(query.getQuery());
+                            writer.writeEndElement(); // "Query" element
+
+                            final Map<String, String> queryDesc = query.getDescription();
+                            if (queryDesc != null) {
+                                for (Map.Entry<String, String> i : queryDesc.entrySet()) {
+                                    writer.writeStartElement(ED_NS, "Description");
+                                    writer.writeAttribute(XMLConstants.XML_NS_URI, "lang",
+                                            i.getKey());
+                                    writer.writeCharacters(i.getValue());
+                                    writer.writeEndElement(); // "Description" element
+                                }
+                            }
+
+                            writer.writeEndElement(); // "ExampleQuery" element
+                        }
+                    }
                 }
 
                 // child resources

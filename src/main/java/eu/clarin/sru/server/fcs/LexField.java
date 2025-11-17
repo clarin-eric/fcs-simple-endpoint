@@ -17,8 +17,8 @@
 package eu.clarin.sru.server.fcs;
 
 /**
- * This class is used to information about a Lex Fields that is available by the
- * Endpoint.
+ * This class is used to store information about a Lex Fields that is available
+ * by the Endpoint.
  */
 public class LexField {
     private final String id;
