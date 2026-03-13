@@ -864,6 +864,8 @@ public class SimpleEndpointDescriptionParser {
                         throw new SRUConfigException("Element <ExampleQuery> " +
                                 "must have a 'type' attribute");
                     }
+                    checkForKnownQueryTypes(type);
+
                     XPathExpression exp2 = xpath.compile("ed:Query");
                     Node n3 = (Node) exp2.evaluate(n2, XPathConstants.NODE);
                     String query = cleanString(n3.getTextContent());
@@ -1008,6 +1010,25 @@ public class SimpleEndpointDescriptionParser {
             }
         } else {
             throw new SRUConfigException("Error retrieving root element");
+        }
+    }
+
+
+    private static void checkForKnownQueryTypes(String type)
+            throws SRUConfigException {
+        if (type == null) {
+            throw new SRUConfigException("query type must not be null");
+        }
+
+        switch (type) {
+            case Constants.FCS_QUERY_TYPE_CQL:
+            case Constants.FCS_QUERY_TYPE_FCS:
+            case Constants.FCS_QUERY_TYPE_LEX:
+                break;
+
+            default:
+                throw new SRUConfigException(
+                        "query type '" + type + "' is non-standard, only 'cql', 'fcs' and 'lex' are supported");
         }
     }
 
