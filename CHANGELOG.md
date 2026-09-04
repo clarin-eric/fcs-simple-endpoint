@@ -1,5 +1,30 @@
 # Changelog
 
+# [2.1.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-2.1.0) - 2026-09-04
+
+- Additions:
+  - Add support for LexFCS 1.0
+    - Add new standard `CAP_LEXICAL_SEARCH_V1_0` constant for Lexical Search capability
+    - Add and update lexical search field types
+    - Add `X_FCS_LEX_FIELDS_KEY` and `X_FCS_LEX_FIELDS_SEPARATOR` request parameter constants
+
+- Changes:
+  - Reformat `pom.xml`
+  - Add missing `release` configuration for compiler plugin, pom jar packaging
+  - Add CLARIN nexus repository to pom repositories
+  - Deprecate `CAP_LEX_SEARCH`!
+
+- Bug Fixes:
+  - Strict check for known query types of `ExampleQuery` elements in the endpoint description (`SimpleEndpointDescriptionParser`). (valid: `cql`/`fcs`/`lex`)
+
+- Dependencies:
+  - Bump `eu.clarin.sru:sru-server` to `1.14.0`
+  - Bump `eu.clarin.sru.fcs:fcs-ql` to `3.1.0`
+  - Bump `org.slf4j` to `2.0.18`
+  - Bump `org.bouncycastle:bcprov-jdk18on` to `1.85.2`
+  - Bump `com.auth0:java-jwt` to `4.6.0`, `com.auth0:jwks-rsa` to `0.24.1`
+  - Bump all maven plugin dependencies (pin in `<pluginManagement/>`)
+
 # [2.0.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-2.0.0) - 2025-11-17
 
 - Changes:
