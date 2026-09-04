@@ -82,6 +82,7 @@ public final class Constants {
     public static final String LEX_FIELD_TYPE_PHONETIC = "phonetic";
     public static final String LEX_FIELD_TYPE_DEFINITION = "definition";
     public static final String LEX_FIELD_TYPE_ETYMOLOGY = "etymology";
+    public static final String LEX_FIELD_TYPE_GRAMMAR = "grammar";
     public static final String LEX_FIELD_TYPE_CASE = "case";
     public static final String LEX_FIELD_TYPE_DEGREE = "degree";
     public static final String LEX_FIELD_TYPE_GENDER = "gender";
@@ -114,6 +115,7 @@ public final class Constants {
             LEX_FIELD_TYPE_PHONETIC,
             LEX_FIELD_TYPE_DEFINITION,
             LEX_FIELD_TYPE_ETYMOLOGY,
+            LEX_FIELD_TYPE_GRAMMAR,
             LEX_FIELD_TYPE_CASE,
             LEX_FIELD_TYPE_DEGREE,
             LEX_FIELD_TYPE_GENDER,

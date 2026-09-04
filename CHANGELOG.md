@@ -1,5 +1,10 @@
 # Changelog
 
+# [2.1.1](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-2.1.1) - 2026-09-04
+
+- Bug Fixes:
+  - Add missing `grammar` field type (LexFCS 1.0)
+
 # [2.1.0](https://github.com/clarin-eric/fcs-simple-endpoint/releases/tag/FCSSimpleEndpoint-2.1.0) - 2026-09-04
 
 - Additions:
