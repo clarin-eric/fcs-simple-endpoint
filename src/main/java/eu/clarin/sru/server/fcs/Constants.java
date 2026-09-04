@@ -73,6 +73,7 @@ public final class Constants {
     };
 
     // FCS lexical field type identifiers
+    public static final String LEX_VIRTUAL_FIELD_TYPE_ANY = "any";
     public static final String LEX_VIRTUAL_FIELD_TYPE_LANGUAGE = "lang";
     public static final String LEX_FIELD_TYPE_ENTRYID = "entryId";
     public static final String LEX_FIELD_TYPE_LEMMA = "lemma";
@@ -82,18 +83,21 @@ public final class Constants {
     public static final String LEX_FIELD_TYPE_DEFINITION = "definition";
     public static final String LEX_FIELD_TYPE_ETYMOLOGY = "etymology";
     public static final String LEX_FIELD_TYPE_CASE = "case";
-    public static final String LEX_FIELD_TYPE_NUMBER = "number";
+    public static final String LEX_FIELD_TYPE_DEGREE = "degree";
     public static final String LEX_FIELD_TYPE_GENDER = "gender";
+    public static final String LEX_FIELD_TYPE_MOOD = "mood";
+    public static final String LEX_FIELD_TYPE_NUMBER = "number";
     public static final String LEX_FIELD_TYPE_POS = "pos";
+    public static final String LEX_FIELD_TYPE_TENSE = "tense";
     public static final String LEX_FIELD_TYPE_BASEFORM = "baseform";
     public static final String LEX_FIELD_TYPE_SEGMENTATION = "segmentation";
     public static final String LEX_FIELD_TYPE_SENTIMENT = "sentiment";
     public static final String LEX_FIELD_TYPE_FREQUENCY = "frequency";
     public static final String LEX_FIELD_TYPE_ANTONYM = "antonym";
-    public static final String LEX_FIELD_TYPE_HYPONYM = "hyponym";
-    public static final String LEX_FIELD_TYPE_HYPERNYM = "hypernym";
-    public static final String LEX_FIELD_TYPE_MERONYM = "meronym";
     public static final String LEX_FIELD_TYPE_HOLONYM = "holonym";
+    public static final String LEX_FIELD_TYPE_HYPERNYM = "hypernym";
+    public static final String LEX_FIELD_TYPE_HYPONYM = "hyponym";
+    public static final String LEX_FIELD_TYPE_MERONYM = "meronym";
     public static final String LEX_FIELD_TYPE_SYNONYM = "synonym";
     public static final String LEX_FIELD_TYPE_RELATED = "related";
     public static final String LEX_FIELD_TYPE_REF = "ref";
@@ -101,6 +105,7 @@ public final class Constants {
     public static final String LEX_FIELD_TYPE_CITATION = "citation";
 
     public static final String[] LEX_FIELD_TYPES = {
+            LEX_VIRTUAL_FIELD_TYPE_ANY,
             LEX_VIRTUAL_FIELD_TYPE_LANGUAGE,
             LEX_FIELD_TYPE_ENTRYID,
             LEX_FIELD_TYPE_LEMMA,
@@ -110,18 +115,21 @@ public final class Constants {
             LEX_FIELD_TYPE_DEFINITION,
             LEX_FIELD_TYPE_ETYMOLOGY,
             LEX_FIELD_TYPE_CASE,
-            LEX_FIELD_TYPE_NUMBER,
+            LEX_FIELD_TYPE_DEGREE,
             LEX_FIELD_TYPE_GENDER,
+            LEX_FIELD_TYPE_MOOD,
+            LEX_FIELD_TYPE_NUMBER,
             LEX_FIELD_TYPE_POS,
+            LEX_FIELD_TYPE_TENSE,
             LEX_FIELD_TYPE_BASEFORM,
             LEX_FIELD_TYPE_SEGMENTATION,
             LEX_FIELD_TYPE_SENTIMENT,
             LEX_FIELD_TYPE_FREQUENCY,
             LEX_FIELD_TYPE_ANTONYM,
-            LEX_FIELD_TYPE_HYPONYM,
-            LEX_FIELD_TYPE_HYPERNYM,
-            LEX_FIELD_TYPE_MERONYM,
             LEX_FIELD_TYPE_HOLONYM,
+            LEX_FIELD_TYPE_HYPERNYM,
+            LEX_FIELD_TYPE_HYPONYM,
+            LEX_FIELD_TYPE_MERONYM,
             LEX_FIELD_TYPE_SYNONYM,
             LEX_FIELD_TYPE_RELATED,
             LEX_FIELD_TYPE_REF,
@@ -134,8 +142,11 @@ public final class Constants {
             URI.create("http://clarin.eu/fcs/capability/basic-search");
     public static final URI CAP_ADVANCED_SEARCH =
             URI.create("http://clarin.eu/fcs/capability/advanced-search");
+    @Deprecated
     public static final URI CAP_LEX_SEARCH =
             URI.create("http://clarin.eu/fcs/capability/lex-search");
+    public static final URI CAP_LEXICAL_SEARCH_V1_0 =
+            URI.create("http://clarin.eu/fcs/capability/lexical-search/1.0");
     public static final URI CAP_AUTHENTICATED_SEARCH =
             URI.create("http://clarin.eu/fcs/capability/authenticated-search");
 
@@ -160,6 +171,10 @@ public final class Constants {
     // FCS request parameters to extract Data Views
     public static final String X_FCS_DATAVIEWS_KEY = "x-fcs-dataviews";
     public static final String X_FCS_DATAVIEWS_SEPARATOR = ",";
+
+    // FCS request parameters to extract Lex Fields Select filter
+    public static final String X_FCS_LEX_FIELDS_KEY = "x-fcs-lex-fields";
+    public static final String X_FCS_LEX_FIELDS_SEPARATOR = ",";
 
     public static final String CLARIN_FCS_RECORD_SCHEMA = "http://clarin.eu/fcs/resource";
 

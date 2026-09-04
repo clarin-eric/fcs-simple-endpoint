@@ -75,13 +75,13 @@
         <dependency>
             <groupId>eu.clarin.sru</groupId>
             <artifactId>sru-server</artifactId>
-            <version>1.13.0</version>
+            <version>1.14.0</version>
         </dependency>
 
         <dependency>
             <groupId>eu.clarin.sru.fcs</groupId>
             <artifactId>fcs-ql</artifactId>
-            <version>3.0.0</version>
+            <version>3.1.0</version>
         </dependency>
 
         <dependency>

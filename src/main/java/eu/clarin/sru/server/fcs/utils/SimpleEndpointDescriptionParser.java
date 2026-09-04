@@ -224,7 +224,17 @@ public class SimpleEndpointDescriptionParser {
                     "Advanced Search in capabilities list! FCS 1.0 only " +
                     "supports Basic Search");
         }
-        if (capabilities.contains(Constants.CAP_AUTHENTICATED_SEARCH) && (version < 2)) {
+        @SuppressWarnings("deprecation")
+        final boolean hasLexCap = capabilities.contains(Constants.CAP_LEX_SEARCH)
+                || capabilities.contains(Constants.CAP_LEXICAL_SEARCH_V1_0);
+        if (hasLexCap && (version < 2)) {
+            logger.warn("Endpoint description is declared as version " +
+                    "FCS 1.0 (@version = 1), but contains support for " +
+                    "Lexical Search in capabilities list! FCS 1.0 only " +
+                    "supports Basic Search");
+        }
+        final boolean hasAuthCap = capabilities.contains(Constants.CAP_AUTHENTICATED_SEARCH);
+        if (hasAuthCap && (version < 2)) {
             logger.warn("Endpoint description is declared as version " +
                     "FCS 1.0 (@version = 1), but contains support for " +
                     "Authenticated Search in capabilities list! FCS 1.0 only " +
@@ -330,7 +340,7 @@ public class SimpleEndpointDescriptionParser {
                     "Advanced FCS but does not declare Advanced Data View (" +
                     Constants.MIMETYPE_ADV + ") in <SupportedDataViews>");
         }
-        if (capabilities.contains(Constants.CAP_LEX_SEARCH) && !hasLexView) {
+        if (hasLexCap && !hasLexView) {
             throw new SRUConfigException("Endpoint claimes to support " +
                     "Lexical FCS but does not declare Lex Data View (" +
                     Constants.MIMETYPE_LEX + ") in <SupportedDataViews>");
@@ -474,17 +484,14 @@ public class SimpleEndpointDescriptionParser {
             }
         }
 
-        if ((supportedLexFields != null) &&
-                !capabilities.contains(Constants.CAP_LEX_SEARCH)) {
-                logger.warn("Endpoint description has <SupportedLexField> but " +
-                        "does not indicate support for Lexical Search. " +
-                        "Please consider adding capability ({}) to " +
-                        "your endpoint description to make use of layers!",
-                        Constants.CAP_LEX_SEARCH);
+        if ((supportedLexFields != null) && !hasLexCap) {
+            logger.warn("Endpoint description has <SupportedLexField> but " +
+                    "does not indicate support for Lexical Search. " +
+                    "Please consider adding capability ({}) to " +
+                    "your endpoint description to make use of layers!",
+                    Constants.CAP_LEXICAL_SEARCH_V1_0);
         } // necessary
         logger.debug("F: {}", supportedLexFields);
-
-        boolean hasAuthCap = capabilities.contains(Constants.CAP_AUTHENTICATED_SEARCH);
 
         // resources
         exp = xpath.compile("/ed:EndpointDescription/ed:Resources/ed:Resource");
